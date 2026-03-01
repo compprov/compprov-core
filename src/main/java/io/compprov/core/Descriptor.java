@@ -1,5 +1,7 @@
 package io.compprov.core;
 
+import io.compprov.core.meta.Meta;
+
 import java.util.Objects;
 
 public final class Descriptor {
@@ -18,10 +20,10 @@ public final class Descriptor {
         return new Descriptor(name, Meta.NO_META, Meta.NO_META);
     }
 
-    public static Descriptor descriptor(String shortName,
+    public static Descriptor descriptor(String name,
                                         Meta description,
                                         Meta origin) {
-        return new Descriptor(shortName, description, origin);
+        return new Descriptor(name, description, origin);
     }
 
     public String getName() {

@@ -11,7 +11,7 @@ public interface WrappedVariable<T> {
         return getVariableTrack().getDescriptor();
     }
 
-    public T getValue();
+    T getValue();
 
-    public Context getContext();
+    Context getContext();
 }

@@ -10,30 +10,35 @@ import io.compprov.core.variable.VariableWrapper;
 import io.compprov.core.variable.WrappedVariable;
 
 import java.time.Clock;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-/**
- * Thread safe
- */
+/** Thread-safe computation context that accumulates the Calculation Provenance Graph (CPG). */
 public class Context {
 
-    public record ContextRecord(List<WrappedVariable> variables, List<WrappedOperation> operations) {
+    /**
+     * Point-in-time CPG snapshot. Variables are keyed by UUID (ordered by creation time);
+     * operations are ordered by start time.
+     */
+    public record ContextRecord(Map<UUID, WrappedVariable> variables,
+                                List<WrappedOperation> operations) {
     }
 
     protected final ConcurrentHashMap<Class<?>, VariableWrapper<?>> wrappers = new ConcurrentHashMap<>();
     protected final ConcurrentHashMap<VariableTrack, WrappedVariable> variables = new ConcurrentHashMap<>();
     protected final ConcurrentHashMap<OperationTrack, WrappedOperation> operations = new ConcurrentHashMap<>();
 
-    private final Clock clock;
-    private final ObjectMapper mapper;
+    protected final Clock clock;
+    protected final ZoneId zoneId;
+    protected final ObjectMapper mapper;
 
-    public Context(Clock clock, ObjectMapper mapper) {
+    public Context(Clock clock, ZoneId zoneId, ObjectMapper mapper) {
         this.clock = Objects.requireNonNull(clock, "clock");
+        this.zoneId = Objects.requireNonNull(zoneId, "zoneId");
         this.mapper = Objects.requireNonNull(mapper, "mapper");
     }
 
@@ -47,6 +52,7 @@ public class Context {
         return wrap(value, descriptor, VariableKind.INPUT);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> WrappedVariable wrap(T value, Descriptor descriptor, VariableKind variableKind) {
         Objects.requireNonNull(value, "value");
         Objects.requireNonNull(descriptor, "descriptor");
@@ -56,14 +62,18 @@ public class Context {
             throw new NullPointerException("Wrapper for %s is not found".formatted(value.getClass()));
         }
 
-        final var wrapped = wrapper.wrap(
-                this,
-                new VariableTrack(UUID.randomUUID(), clock.instant(), variableKind, descriptor),
-                value);
+        final var track = new VariableTrack(
+                UUID.randomUUID(),
+                clock.instant().atZone(zoneId),
+                variableKind,
+                descriptor,
+                value.getClass());
+        final var wrapped = wrapper.wrap(this, track, value);
         variables.put(wrapped.getVariableTrack(), wrapped);
         return wrapped;
     }
 
+    // Run the computation without any lock — this is where parallelism happens.
     public WrappedVariable executeOperation(Supplier<?> computation,
                                             List<WrappedVariable> input,
                                             Descriptor opDescriptor,
@@ -72,16 +82,20 @@ public class Context {
         Objects.requireNonNull(opDescriptor, "opDescriptor");
         Objects.requireNonNull(resultDescriptor, "resultDescriptor");
 
-        // Run the computation without any lock — this is where parallelism happens.
-        final var started = clock.instant();
+        final var started = clock.instant().atZone(zoneId);
         final var result = computation.get();
-        final var finished = clock.instant();
+        final var finished = clock.instant().atZone(zoneId);
 
         Objects.requireNonNull(result, "computation must not return null");
         final var wrappedResult = wrap(result, resultDescriptor, VariableKind.PRODUCED);
 
         final var wrappedOperation = new WrappedOperation(
-                new OperationTrack(UUID.randomUUID(), started, finished, opDescriptor),
+                new OperationTrack(
+                        UUID.randomUUID(),
+                        started,
+                        finished,
+                        opDescriptor,
+                        wrappedResult.getClass()),
                 input,
                 wrappedResult);
         operations.put(wrappedOperation.getOperationTrack(), wrappedOperation);
@@ -90,15 +104,21 @@ public class Context {
     }
 
     public ContextRecord export() {
-        return new ContextRecord(
-                variables.values()
-                        .stream()
-                        .sorted(Comparator.comparing(variable -> variable.getVariableTrack().getCreatedAt()))
-                        .toList(),
-                operations.values()
-                        .stream()
-                        .sorted(Comparator.comparing(operation -> operation.getOperationTrack().getStartedAt()))
-                        .toList());
+        Map<UUID, WrappedVariable> variablesMap = variables.values()
+                .stream()
+                .sorted(Comparator.comparing(v -> v.getVariableTrack().getCreatedAt()))
+                .collect(Collectors.toMap(
+                        v -> v.getVariableTrack().getId(),
+                        Function.identity(),
+                        (a, b) -> a,
+                        LinkedHashMap::new));
+
+        List<WrappedOperation> operationsList = operations.values()
+                .stream()
+                .sorted(Comparator.comparing(op -> op.getOperationTrack().getStartedAt()))
+                .toList();
+
+        return new ContextRecord(variablesMap, operationsList);
     }
 
     public String toJson() {

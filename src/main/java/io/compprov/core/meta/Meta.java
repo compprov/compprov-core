@@ -1,4 +1,6 @@
-package io.compprov.core;
+package io.compprov.core.meta;
+
+import io.compprov.core.Descriptor;
 
 /**
  * Marker interface that carries a semantic description of a tracked variable/operation.
@@ -11,6 +13,10 @@ package io.compprov.core;
  */
 public interface Meta {
 
-    public static Meta NO_META = new Meta() {
-    };
+    public static Meta NO_META = new NoMeta();
+
+    public static class NoMeta implements Meta {
+        private NoMeta() {
+        }
+    }
 }
