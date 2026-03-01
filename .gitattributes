@@ -1,0 +1,17 @@
+# Normalize line endings to LF in the repository, check out as-is on Windows
+* text=auto eol=lf
+
+# Java source files — always LF
+*.java text eol=lf
+*.xml  text eol=lf
+*.md   text eol=lf
+*.txt  text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+
+# Binary files — no line ending conversion
+*.jar  binary
+*.class binary
+*.png  binary
+*.jpg  binary
+*.pdf  binary
