@@ -18,5 +18,10 @@ public interface Meta {
     public static class NoMeta implements Meta {
         private NoMeta() {
         }
+
+        @Override
+        public String toString() {
+            return "";
+        }
     }
 }

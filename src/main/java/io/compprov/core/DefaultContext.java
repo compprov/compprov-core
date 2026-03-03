@@ -3,7 +3,10 @@ package io.compprov.core;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.compprov.core.meta.Meta;
-import io.compprov.core.operation.WrappedOperation;
+import io.compprov.core.serde.AbstractWrappedVariableSerializer;
+import io.compprov.core.serde.MathContextDeserializer;
+import io.compprov.core.serde.NoMetaSerializer;
+import io.compprov.core.serde.ZonedDateTimeSerializer;
 import io.compprov.core.variable.AbstractWrappedVariable;
 import io.compprov.core.wrappers.*;
 import io.compprov.core.wrappers.primitive.IntegerWrapper;
@@ -17,6 +20,8 @@ import java.time.Clock;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import static io.compprov.core.Descriptor.descriptor;
+
 /**
  * Ready-to-use {@link Context} pre-configured with serializers for all built-in
  * types and wrappers for {@link BigDecimal} and {@link BigInteger}.
@@ -26,18 +31,25 @@ import java.time.ZonedDateTime;
  */
 public class DefaultContext extends Context {
 
+    public DefaultContext() {
+        this(true, false,
+                descriptor("default", Meta.NO_META, Meta.NO_META));
+    }
+
     /**
      * Creates a default context using the UTC system clock and a fresh
      * {@link ObjectMapper} with all required serializers registered.
      */
-    public DefaultContext() {
-        this(Clock.systemUTC(), ZoneId.of("UTC"), new ObjectMapper());
+    public DefaultContext(boolean requireInputDescriptor, boolean requireResultDescriptor,
+                          Descriptor contextDescriptor) {
+        this(Clock.systemUTC(), ZoneId.of("UTC"), new ObjectMapper(),
+                requireInputDescriptor, requireResultDescriptor, contextDescriptor);
 
         SimpleModule module = new SimpleModule();
         module.addSerializer(AbstractWrappedVariable.class, new AbstractWrappedVariableSerializer());
-        module.addSerializer(WrappedOperation.class, new WrappedOperationSerializer());
         module.addSerializer(ZonedDateTime.class, new ZonedDateTimeSerializer());
         module.addSerializer(Meta.NoMeta.class, new NoMetaSerializer());
+        module.addDeserializer(MathContext.class, new MathContextDeserializer());
         mapper.registerModule(module);
     }
 
@@ -51,8 +63,10 @@ public class DefaultContext extends Context {
      * @param zoneId the zone attached to every timestamp
      * @param mapper the Jackson mapper
      */
-    public DefaultContext(Clock clock, ZoneId zoneId, ObjectMapper mapper) {
-        super(clock, zoneId, mapper);
+    public DefaultContext(Clock clock, ZoneId zoneId, ObjectMapper mapper,
+                          boolean requireInputDescriptor, boolean requireResultDescriptor,
+                          Descriptor contextDescriptor) {
+        super(clock, zoneId, mapper, requireInputDescriptor, requireResultDescriptor, contextDescriptor);
 
         registerWrapper(BigDecimal.class, new BigDecimalWrapper());
         registerWrapper(BigInteger.class, new BigIntegerWrapper());

@@ -1,4 +1,4 @@
-package io.compprov.core.wrappers;
+package io.compprov.core.serde;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;

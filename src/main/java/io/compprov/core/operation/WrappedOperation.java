@@ -1,31 +1,29 @@
 package io.compprov.core.operation;
 
-import io.compprov.core.variable.WrappedVariable;
-
 import java.util.Collections;
 import java.util.List;
 
 public class WrappedOperation {
 
     private final OperationTrack operationTrack;
-    private final List<WrappedVariable> input;
-    private final WrappedVariable result;
+    private final List<String> inputIds;
+    private final String resultId;
 
-    public WrappedOperation(OperationTrack operationTrack, List<WrappedVariable> input, WrappedVariable result) {
+    public WrappedOperation(OperationTrack operationTrack, List<String> inputIds, String resultId) {
         this.operationTrack = operationTrack;
-        this.input = Collections.unmodifiableList(input);
-        this.result = result;
+        this.inputIds = Collections.unmodifiableList(inputIds);
+        this.resultId = resultId;
     }
 
     public OperationTrack getOperationTrack() {
         return operationTrack;
     }
 
-    public List<WrappedVariable> getInput() {
-        return input;
+    public List<String> getInputIds() {
+        return inputIds;
     }
 
-    public WrappedVariable getResult() {
-        return result;
+    public String getResultId() {
+        return resultId;
     }
 }

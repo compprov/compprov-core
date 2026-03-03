@@ -1,30 +1,39 @@
 package io.compprov.core.variable;
 
 import io.compprov.core.Descriptor;
+import io.compprov.core.meta.Meta;
 
 import java.time.ZonedDateTime;
 import java.util.Objects;
-import java.util.UUID;
 
 public final class VariableTrack {
 
-    private final UUID id;
+    private final String id;
+    private final int numericId;
     private final ZonedDateTime createdAt;
     private final VariableKind kind;
     private final Descriptor descriptor;
     private final Class valueClass;
 
-    public VariableTrack(UUID id, ZonedDateTime createdAt, VariableKind kind,
+    public VariableTrack(int numericId, ZonedDateTime createdAt, VariableKind kind,
                          Descriptor descriptor, Class valueClass) {
-        this.id = Objects.requireNonNull(id, "id");
+        this.id = switch (kind) {
+            case INPUT -> "i_%s".formatted(numericId);
+            case OUTPUT -> "o_%s".formatted(numericId);
+        };
+        this.numericId = numericId;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
         this.kind = Objects.requireNonNull(kind, "kind");
-        this.descriptor = Objects.requireNonNull(descriptor, "descriptor");
+        this.descriptor = descriptor == null ? new Descriptor(id, Meta.NO_META, Meta.NO_META) : descriptor;
         this.valueClass = Objects.requireNonNull(valueClass, "valueClass");
     }
 
-    public UUID getId() {
+    public String getId() {
         return id;
+    }
+
+    public int getNumericId() {
+        return numericId;
     }
 
     public ZonedDateTime getCreatedAt() {
