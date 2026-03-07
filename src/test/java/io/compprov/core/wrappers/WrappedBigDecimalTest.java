@@ -1,7 +1,9 @@
 package io.compprov.core.wrappers;
 
-import io.compprov.core.DefaultContext;
-import io.compprov.core.Descriptor;
+import io.compprov.core.DataContext;
+import io.compprov.core.DefaultComputationContext;
+import io.compprov.core.DefaultComputationEnvironment;
+import io.compprov.core.meta.Descriptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -18,14 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 public class WrappedBigDecimalTest {
 
-    private DefaultContext ctx;
+    private DefaultComputationContext ctx;
 
     @BeforeEach
     void setUp() {
-        ctx = new DefaultContext();
+        ctx = new DefaultComputationContext(
+                new DefaultComputationEnvironment(),
+                new DataContext(Descriptor.descriptor("test")));
     }
-
-    // ─── Helpers ─────────────────────────────────────────────────────────────
 
     private WrappedBigDecimal wrap(String value, String name) {
         return ctx.wrapBigDecimal(new BigDecimal(value), Descriptor.descriptor(name));
@@ -45,11 +47,11 @@ public class WrappedBigDecimalTest {
     }
 
     private void assertOperationCount(int expected) {
-        assertEquals(expected, ctx.export().operations().size());
+        assertEquals(expected, ctx.snapshot().operations().size());
     }
 
     private void assertVariableCount(int expected) {
-        assertEquals(expected, ctx.export().variables().size());
+        assertEquals(expected, ctx.snapshot().variables().size());
     }
 
     @Test
@@ -162,6 +164,66 @@ public class WrappedBigDecimalTest {
     }
 
     @Test
+    void abs_of_negative() {
+        var a = wrap("-3.5", "a");
+        var result = a.abs(mc(2), null);
+
+        assertValue(result, "3.5");
+    }
+
+    @Test
+    void negate_basic() {
+        var a = wrap("4.2", "a");
+        var result = a.negate(mc(2), null);
+
+        assertValue(result, "-4.2");
+    }
+
+    @Test
+    void plus_applies_math_context() {
+        var a = wrap("3.14159", "a");
+        var result = a.plus(mc(3), null);
+
+        assertEquals(3, result.getValue().precision());
+    }
+
+    @Test
+    void divide_to_integral_value() {
+        var a = wrap("22", "a");
+        var b = wrap("7", "b");
+        var result = a.divideToIntegralValue(b, mc(5), null);
+
+        assertValue(result, "3");
+    }
+
+    @Test
+    void remainder_basic() {
+        var a = wrap("17", "a");
+        var b = wrap("5", "b");
+        var result = a.remainder(b, mc(5), null);
+
+        assertValue(result, "2");
+    }
+
+    @Test
+    void max_returns_larger() {
+        var a = wrap("7", "a");
+        var b = wrap("3", "b");
+        var result = a.max(b, null);
+
+        assertValue(result, "7");
+    }
+
+    @Test
+    void min_returns_smaller() {
+        var a = wrap("7", "a");
+        var b = wrap("3", "b");
+        var result = a.min(b, null);
+
+        assertValue(result, "3");
+    }
+
+    @Test
     void move_point_right() {
         var a = wrap("1.23", "a");
         var n = ctx.wrapInteger(2, Descriptor.descriptor("n"));
@@ -192,18 +254,18 @@ public class WrappedBigDecimalTest {
         var b = wrap("4", "b");
         var sum = a.add(b, mathContext, null);
 
-        var record = ctx.export();
+        var record = ctx.snapshot();
         var op = record.operations().get(0);
 
         // The operation's inputs should reference a, b, and mc by ID
-        assertEquals(3, op.getInputIds().size());
-        var inputIds = op.getInputIds();
+        assertEquals(3, op.arguments().size());
+        var inputIds = op.arguments().values().stream().toList();
         assertTrue(inputIds.contains(a.getVariableTrack().getId()));
         assertTrue(inputIds.contains(b.getVariableTrack().getId()));
         assertTrue(inputIds.contains(mathContext.getVariableTrack().getId()));
 
         // The result ID should map to the sum variable
-        assertEquals(sum.getVariableTrack().getId(), op.getResultId());
+        assertEquals(sum.getVariableTrack().getId(), op.resultId());
     }
 
     @Test
@@ -211,9 +273,11 @@ public class WrappedBigDecimalTest {
         var a = wrap("1", "a");
         var b = wrap("2", "b");
 
-        var record = ctx.export();
-        assertTrue(record.variables().containsKey(a.getVariableTrack().getId()));
-        assertTrue(record.variables().containsKey(b.getVariableTrack().getId()));
+        var record = ctx.snapshot();
+        assertTrue(record.variables().stream().map(v -> v.track().getId())
+                .filter(id -> id.equals(a.getVariableTrack().getId())).findFirst().isPresent());
+        assertTrue(record.variables().stream().map(v -> v.track().getId())
+                .filter(id -> id.equals(b.getVariableTrack().getId())).findFirst().isPresent());
     }
 
     @Test
@@ -223,8 +287,9 @@ public class WrappedBigDecimalTest {
         var b = wrap("3", "b");
         var sum = a.add(b, mathContext, null);
 
-        var record = ctx.export();
-        assertTrue(record.variables().containsKey(sum.getVariableTrack().getId()));
+        var record = ctx.snapshot();
+        assertTrue(record.variables().stream().map(v -> v.track().getId())
+                .filter(id -> id.equals(sum.getVariableTrack().getId())).findFirst().isPresent());
     }
 
     @Test
@@ -236,8 +301,8 @@ public class WrappedBigDecimalTest {
         var b = ctx.wrapBigDecimal(new BigDecimal("2"), Descriptor.descriptor("b"));
         a.add(b, mathContext, null);
 
-        String json = ctx.toJson();
-        assertTrue(json.contains("\"variables\" : {"), "variables should be a JSON object:\n" + json);
+        String json = ctx.getEnvironment().toJson(ctx.snapshot());
+        assertTrue(json.contains("\"variables\" : ["), "variables should be a JSON array:\n" + json);
         assertTrue(json.contains("\"operations\" : ["), "operations should be a JSON array:\n" + json);
     }
 
@@ -248,8 +313,8 @@ public class WrappedBigDecimalTest {
         var b = wrap("3", "b");
         a.add(b, mathContext, null);
 
-        String json = ctx.toJson();
-        assertTrue(json.contains("\"inputIds\""), "inputIds field should be in JSON:\n" + json);
+        String json = ctx.getEnvironment().toJson(ctx.snapshot());
+        assertTrue(json.contains("\"arguments\""), "inputIds field should be in JSON:\n" + json);
         assertTrue(json.contains("\"resultId\""), "resultId field should be in JSON:\n" + json);
     }
 }

@@ -1,7 +1,9 @@
 package io.compprov.core.wrappers;
 
-import io.compprov.core.DefaultContext;
-import io.compprov.core.Descriptor;
+import io.compprov.core.DataContext;
+import io.compprov.core.DefaultComputationContext;
+import io.compprov.core.DefaultComputationEnvironment;
+import io.compprov.core.meta.Descriptor;
 import io.compprov.core.wrappers.primitive.WrappedInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,11 +18,13 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class WrappedBigIntegerTest {
 
-    private DefaultContext ctx;
+    private DefaultComputationContext ctx;
 
     @BeforeEach
     void setUp() {
-        ctx = new DefaultContext();
+        ctx = new DefaultComputationContext(
+                new DefaultComputationEnvironment(),
+                new DataContext(Descriptor.descriptor("test")));
     }
 
     private WrappedBigInteger wrap(long value, String name) {
@@ -40,11 +44,11 @@ public class WrappedBigIntegerTest {
     }
 
     private void assertOperationCount(int expected) {
-        assertEquals(expected, ctx.export().operations().size());
+        assertEquals(expected, ctx.snapshot().operations().size());
     }
 
     private void assertVariableCount(int expected) {
-        assertEquals(expected, ctx.export().variables().size());
+        assertEquals(expected, ctx.snapshot().variables().size());
     }
 
     @Test
@@ -173,8 +177,8 @@ public class WrappedBigIntegerTest {
         assertOperationCount(1);
 
         // All three inputs should be tracked
-        var op = ctx.export().operations().get(0);
-        assertEquals(3, op.getInputIds().size());
+        var op = ctx.snapshot().operations().get(0);
+        assertEquals(3, op.arguments().size());
     }
 
     @Test
@@ -374,9 +378,11 @@ public class WrappedBigIntegerTest {
         var a = wrap(1, "a");
         var b = wrap(2, "b");
 
-        var record = ctx.export();
-        assertTrue(record.variables().containsKey(a.getVariableTrack().getId()));
-        assertTrue(record.variables().containsKey(b.getVariableTrack().getId()));
+        var record = ctx.snapshot();
+        assertTrue(record.variables().stream().map(v -> v.track().getId())
+                .filter(id -> id.equals(a.getVariableTrack().getId())).findFirst().isPresent());
+        assertTrue(record.variables().stream().map(v -> v.track().getId())
+                .filter(id -> id.equals(b.getVariableTrack().getId())).findFirst().isPresent());
     }
 
     @Test
@@ -393,11 +399,11 @@ public class WrappedBigIntegerTest {
         var b = wrap(3, "b");
         a.add(b, null);
 
-        String json = ctx.toJson();
+        String json = ctx.getEnvironment().toJson(ctx.snapshot());
         assertNotNull(json);
-        assertTrue(json.contains("\"variables\" : {"));
+        assertTrue(json.contains("\"variables\" : ["));
         assertTrue(json.contains("\"operations\" : ["));
-        assertTrue(json.contains("\"inputIds\""));
+        assertTrue(json.contains("\"arguments\""));
         assertTrue(json.contains("\"resultId\""));
     }
 }

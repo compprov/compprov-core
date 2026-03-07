@@ -1,6 +1,6 @@
 package io.compprov.core.variable;
 
-import io.compprov.core.Context;
+import io.compprov.core.ComputationContext;
 
 /**
  * Must be thread safe
@@ -8,6 +8,5 @@ import io.compprov.core.Context;
  * @param <T>
  */
 public interface VariableWrapper<T> {
-
-    WrappedVariable wrap(Context context, VariableTrack variableTrack, T value);
+    WrappedVariable wrap(ComputationContext context, VariableTrack variableTrack, T value);
 }

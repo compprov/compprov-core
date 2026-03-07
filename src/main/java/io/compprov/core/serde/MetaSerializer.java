@@ -7,19 +7,18 @@ import io.compprov.core.meta.Meta;
 
 import java.io.IOException;
 
-public class NoMetaSerializer extends StdSerializer<Meta.NoMeta> {
+public class MetaSerializer extends StdSerializer<Meta> {
 
-    public NoMetaSerializer() {
+    public MetaSerializer() {
         this(null);
     }
 
-    public NoMetaSerializer(Class<Meta.NoMeta> t) {
+    public MetaSerializer(Class<Meta> t) {
         super(t);
     }
 
     @Override
-    public void serialize(Meta.NoMeta value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeStartObject();
-        gen.writeEndObject();
+    public void serialize(Meta value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+        gen.writeObject(value.getParameters());
     }
 }

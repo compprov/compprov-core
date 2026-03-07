@@ -1,6 +1,6 @@
 package io.compprov.core.operation;
 
-import io.compprov.core.Descriptor;
+import io.compprov.core.meta.Descriptor;
 
 import java.time.ZonedDateTime;
 import java.util.Objects;
@@ -12,10 +12,10 @@ public final class OperationTrack {
     private final ZonedDateTime startedAt;
     private final ZonedDateTime finishedAt;
     private final Descriptor descriptor;
-    private final Class wrapperClass;
+    private final String wrapperClass;
 
     public OperationTrack(int numericId, ZonedDateTime startedAt, ZonedDateTime finishedAt,
-                          Descriptor descriptor, Class wrapperClass) {
+                          Descriptor descriptor, String wrapperClass) {
         this.id = "op_%s".formatted(numericId);
         this.numericId = numericId;
         this.startedAt = Objects.requireNonNull(startedAt, "startedAt");
@@ -44,7 +44,33 @@ public final class OperationTrack {
         return descriptor;
     }
 
-    public Class getWrapperClass() {
+    public String getWrapperClass() {
         return wrapperClass;
+    }
+
+    @Override
+    public String toString() {
+        return "OperationTrack{" +
+                "id='" + id + '\'' +
+                ", descriptor=" + descriptor +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OperationTrack that = (OperationTrack) o;
+        return numericId == that.numericId
+                && Objects.equals(id, that.id)
+                && Objects.equals(startedAt.toInstant(), that.startedAt.toInstant())
+                && Objects.equals(finishedAt.toInstant(), that.finishedAt.toInstant())
+                && Objects.equals(descriptor, that.descriptor)
+                && Objects.equals(wrapperClass, that.wrapperClass);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, numericId, startedAt, finishedAt, descriptor, wrapperClass);
     }
 }

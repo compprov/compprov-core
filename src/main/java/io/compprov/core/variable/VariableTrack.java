@@ -1,6 +1,6 @@
 package io.compprov.core.variable;
 
-import io.compprov.core.Descriptor;
+import io.compprov.core.meta.Descriptor;
 import io.compprov.core.meta.Meta;
 
 import java.time.ZonedDateTime;
@@ -13,10 +13,10 @@ public final class VariableTrack {
     private final ZonedDateTime createdAt;
     private final VariableKind kind;
     private final Descriptor descriptor;
-    private final Class valueClass;
+    private final String valueClass;
 
     public VariableTrack(int numericId, ZonedDateTime createdAt, VariableKind kind,
-                         Descriptor descriptor, Class valueClass) {
+                         Descriptor descriptor, String valueClass) {
         this.id = switch (kind) {
             case INPUT -> "i_%s".formatted(numericId);
             case OUTPUT -> "o_%s".formatted(numericId);
@@ -24,7 +24,7 @@ public final class VariableTrack {
         this.numericId = numericId;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");
         this.kind = Objects.requireNonNull(kind, "kind");
-        this.descriptor = descriptor == null ? new Descriptor(id, Meta.NO_META, Meta.NO_META) : descriptor;
+        this.descriptor = descriptor == null ? new Descriptor(id, Meta.NO_META) : descriptor;
         this.valueClass = Objects.requireNonNull(valueClass, "valueClass");
     }
 
@@ -48,7 +48,27 @@ public final class VariableTrack {
         return descriptor;
     }
 
-    public Class getValueClass() {
+    public String getValueClass() {
         return valueClass;
+    }
+
+    @Override
+    public String toString() {
+        return "VariableTrack{" +
+                "id='" + id + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VariableTrack that = (VariableTrack) o;
+        return numericId == that.numericId && Objects.equals(id, that.id) && Objects.equals(createdAt.toInstant(), that.createdAt.toInstant()) && kind == that.kind && Objects.equals(descriptor, that.descriptor) && Objects.equals(valueClass, that.valueClass);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, numericId, createdAt, kind, descriptor, valueClass);
     }
 }
