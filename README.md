@@ -5,8 +5,6 @@
 in a computation as it runs. The result is a complete, machine-readable audit trail of how each
 output was derived from its inputs.
 
-> Originally described in the research proposal *"Speaking Numbers Framework"* by Minas Abramyan.
-
 ---
 
 ## Contents
