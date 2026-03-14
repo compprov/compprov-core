@@ -16,6 +16,7 @@ output was derived from its inputs.
 - [Extending with custom type wrappers](#extending-with-custom-type-wrappers)
 - [Built-in types](#built-in-types)
 - [Thread safety](#thread-safety)
+- [Visualization](#visualization)
 - [License](#license)
 
 ---
@@ -293,6 +294,34 @@ be shared across threads and computations.
 `ComputationContext` is thread-safe for all wrap and executeOperation calls. The `snapshot()`
 method is **not** safe to call while other threads are still recording operations into the same
 context.
+
+---
+
+## Visualization
+
+To visualize your CPG data use [compprov-render](https://github.com/compprov/compprov-render) —
+a set of HTML pages that run locally in your web browser, no server required.
+
+Simply export a snapshot to JSON and open the page:
+
+```java
+String json = env.toJson(ctx.snapshot());
+// save to a file, then open graph.html or plot.html in your browser
+```
+
+### Graph view — provenance graph
+
+Renders the full CPG as an interactive node-edge graph.
+Variables are shown as typed nodes (input / output), operations as diamond nodes with labeled argument edges.
+
+![Provenance Graph](https://raw.githubusercontent.com/compprov/compprov-render/master/screenshots/graph.png)
+
+### Plot view — multi-dataset comparison
+
+Plots numeric variable values across one or more datasets side-by-side.
+Supports points, line, and table views with configurable X-axis labels.
+
+![Plot View](https://raw.githubusercontent.com/compprov/compprov-render/master/screenshots/plot.png)
 
 ---
 
