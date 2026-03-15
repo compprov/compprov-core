@@ -36,7 +36,7 @@ output was derived from its inputs.
 
 ## Getting started
 
-Add the dependency to your `pom.xml` (latest version: [![GitHub release](https://img.shields.io/github/v/release/compprov/compprov-core?color=brightgreen)](https://github.com/compprov/compprov-core/releases)):
+Add the dependency to your `pom.xml` (latest version: [![Maven Central](https://img.shields.io/maven-central/v/io.compprov/compprov-core?color=brightgreen)](https://central.sonatype.com/artifact/io.compprov/compprov-core)):
 
 ```xml
 <dependency>
