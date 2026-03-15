@@ -152,7 +152,7 @@
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
-                            <!-- Wait for the upload to be validated before returning -->
+                            <autoPublish>true</autoPublish>
                             <waitUntil>published</waitUntil>
                         </configuration>
                     </plugin>
