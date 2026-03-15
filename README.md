@@ -36,13 +36,13 @@ output was derived from its inputs.
 
 ## Getting started
 
-Add the dependency to your `pom.xml`:
+Add the dependency to your `pom.xml` (latest version: [![Maven Central](https://img.shields.io/maven-central/v/io.compprov/compprov-core?color=brightgreen)](https://central.sonatype.com/artifact/io.compprov/compprov-core)):
 
 ```xml
 <dependency>
     <groupId>io.compprov</groupId>
     <artifactId>compprov-core</artifactId>
-    <version>0.1.0</version>
+    <version>VERSION</version>
 </dependency>
 ```
 
