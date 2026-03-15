@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -391,6 +392,250 @@ public class WrappedBigIntegerTest {
         assertThrows(NullPointerException.class, () -> a.add(null, null));
         assertThrows(NullPointerException.class, () -> a.multiply(null, null));
         assertThrows(NullPointerException.class, () -> a.gcd(null, null));
+    }
+
+    // ── addBulk ───────────────────────────────────────────────────────────────
+
+    @Test
+    void addBulk_sums_all_values_in_list() {
+        var a = wrap(1, "a");
+        var b = wrap(2, "b");
+        var c = wrap(3, "c");
+        var d = wrap(5, "d");
+        var result = a.addBulk(List.of(b, c, d), null);
+
+        assertValue(result, 11); // 1 + 2 + 3 + 5
+        assertOperationCount(1);
+    }
+
+    @Test
+    void addBulk_single_element() {
+        var a = wrap(1, "a");
+        var b = wrap(7, "b");
+        var result = a.addBulk(List.of(b), null);
+
+        assertValue(result, 8);
+    }
+
+    @Test
+    void addBulk_tracks_argument_count() {
+        var a = wrap(1, "a");
+        var b = wrap(2, "b");
+        var c = wrap(3, "c");
+        var d = wrap(4, "d");
+        a.addBulk(List.of(b, c, d), null);
+
+        assertEquals(4, ctx.snapshot().operations().get(0).arguments().size());
+    }
+
+    @Test
+    void addBulk_with_descriptor() {
+        var a = wrap(1, "a");
+        var b = wrap(10, "b");
+        var c = wrap(20, "c");
+        var result = a.addBulk(List.of(b, c), Descriptor.descriptor("total"));
+
+        assertValue(result, 31);
+        assertEquals("total", result.getVariableTrack().getDescriptor().getName());
+    }
+
+    @Test
+    void addBulk_null_throws_npe() {
+        var a = wrap(1, "a");
+        assertThrows(NullPointerException.class, () -> a.addBulk(null, null));
+    }
+
+    // ── subtractBulk ──────────────────────────────────────────────────────────
+
+    @Test
+    void subtractBulk_subtracts_sequentially() {
+        var a = wrap(1, "a");
+        var b = wrap(20, "b");
+        var c = wrap(5, "c");
+        var d = wrap(3, "d");
+        var result = a.subtractBulk(List.of(b, c, d), null);
+
+        assertValue(result, -27); // 1 - 20 - 5 - 3
+        assertOperationCount(1);
+    }
+
+    @Test
+    void subtractBulk_single_element() {
+        var a = wrap(1, "a");
+        var b = wrap(15, "b");
+        var result = a.subtractBulk(List.of(b), null);
+
+        assertValue(result, -14);
+    }
+
+    @Test
+    void subtractBulk_tracks_argument_count() {
+        var a = wrap(1, "a");
+        var b = wrap(100, "b");
+        var c = wrap(10, "c");
+        var d = wrap(5, "d");
+        a.subtractBulk(List.of(b, c, d), null);
+
+        assertEquals(4, ctx.snapshot().operations().get(0).arguments().size());
+    }
+
+    @Test
+    void subtractBulk_null_throws_npe() {
+        var a = wrap(1, "a");
+        assertThrows(NullPointerException.class, () -> a.subtractBulk(null, null));
+    }
+
+    // ── multiplyBulk ──────────────────────────────────────────────────────────
+
+    @Test
+    void multiplyBulk_multiplies_all_values_in_list() {
+        var a = wrap(1, "a");
+        var b = wrap(2, "b");
+        var c = wrap(3, "c");
+        var d = wrap(4, "d");
+        var result = a.multiplyBulk(List.of(b, c, d), null);
+
+        assertValue(result, 24); // 2 * 3 * 4
+        assertOperationCount(1);
+    }
+
+    @Test
+    void multiplyBulk_single_element() {
+        var a = wrap(1, "a");
+        var b = wrap(5, "b");
+        var result = a.multiplyBulk(List.of(b), null);
+
+        assertValue(result, 5);
+    }
+
+    @Test
+    void multiplyBulk_tracks_argument_count() {
+        var a = wrap(1, "a");
+        var b = wrap(2, "b");
+        var c = wrap(3, "c");
+        var d = wrap(4, "d");
+        var e = wrap(5, "e");
+        a.multiplyBulk(List.of(b, c, d, e), null);
+
+        assertEquals(5, ctx.snapshot().operations().get(0).arguments().size());
+    }
+
+    @Test
+    void multiplyBulk_with_descriptor() {
+        var a = wrap(1, "a");
+        var b = wrap(6, "b");
+        var c = wrap(7, "c");
+        var result = a.multiplyBulk(List.of(b, c), Descriptor.descriptor("product"));
+
+        assertValue(result, 42);
+        assertEquals("product", result.getVariableTrack().getDescriptor().getName());
+    }
+
+    @Test
+    void multiplyBulk_null_throws_npe() {
+        var a = wrap(1, "a");
+        assertThrows(NullPointerException.class, () -> a.multiplyBulk(null, null));
+    }
+
+    // ── maxBulk ───────────────────────────────────────────────────────────────
+
+    @Test
+    void maxBulk_returns_largest_value() {
+        var a = wrap(1, "a");
+        var b = wrap(7, "b");
+        var c = wrap(3, "c");
+        var d = wrap(9, "d");
+        var result = a.maxBulk(List.of(b, c, d), null);
+
+        assertValue(result, 9);
+        assertOperationCount(1);
+    }
+
+    @Test
+    void maxBulk_single_element() {
+        var a = wrap(1, "a");
+        var b = wrap(42, "b");
+        var result = a.maxBulk(List.of(b), null);
+
+        assertValue(result, 42);
+    }
+
+    @Test
+    void maxBulk_all_equal() {
+        var a = wrap(1, "a");
+        var b = wrap(5, "b");
+        var c = wrap(5, "c");
+        var result = a.maxBulk(List.of(b, c), null);
+
+        assertValue(result, 5);
+    }
+
+    @Test
+    void maxBulk_tracks_argument_count() {
+        var a = wrap(1, "a");
+        var b = wrap(2, "b");
+        var c = wrap(3, "c");
+        var d = wrap(4, "d");
+        a.maxBulk(List.of(b, c, d), null);
+
+        assertEquals(4, ctx.snapshot().operations().get(0).arguments().size());
+    }
+
+    @Test
+    void maxBulk_null_throws_npe() {
+        var a = wrap(1, "a");
+        assertThrows(NullPointerException.class, () -> a.maxBulk(null, null));
+    }
+
+    // ── minBulk ───────────────────────────────────────────────────────────────
+
+    @Test
+    void minBulk_returns_smallest_value() {
+        var a = wrap(1, "a");
+        var b = wrap(7, "b");
+        var c = wrap(3, "c");
+        var d = wrap(9, "d");
+        var result = a.minBulk(List.of(b, c, d), null);
+
+        assertValue(result, 1);
+        assertOperationCount(1);
+    }
+
+    @Test
+    void minBulk_single_element() {
+        var a = wrap(1, "a");
+        var b = wrap(42, "b");
+        var result = a.minBulk(List.of(b), null);
+
+        assertValue(result, 1);
+    }
+
+    @Test
+    void minBulk_with_negative_values() {
+        var a = wrap(1, "a");
+        var b = wrap(-1, "b");
+        var c = wrap(-5, "c");
+        var d = wrap(3, "d");
+        var result = a.minBulk(List.of(b, c, d), null);
+
+        assertValue(result, -5);
+    }
+
+    @Test
+    void minBulk_tracks_argument_count() {
+        var a = wrap(1, "a");
+        var b = wrap(10, "b");
+        var c = wrap(20, "c");
+        var d = wrap(30, "d");
+        a.minBulk(List.of(b, c, d), null);
+
+        assertEquals(4, ctx.snapshot().operations().get(0).arguments().size());
+    }
+
+    @Test
+    void minBulk_null_throws_npe() {
+        var a = wrap(1, "a");
+        assertThrows(NullPointerException.class, () -> a.minBulk(null, null));
     }
 
     @Test

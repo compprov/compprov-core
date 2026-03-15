@@ -10,9 +10,9 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for {@link WrappedBigDecimal} — verifies that every operation
@@ -292,13 +292,217 @@ public class WrappedBigDecimalTest {
                 .filter(id -> id.equals(sum.getVariableTrack().getId())).findFirst().isPresent());
     }
 
+    // ── addBulk ───────────────────────────────────────────────────────────────
+
+    @Test
+    void addBulk_sums_all_values_in_list() {
+        var a = wrap("1", "a");
+        var b = wrap("2", "b");
+        var c = wrap("3", "c");
+        var d = wrap("4", "d");
+        var result = a.addBulk(List.of(b, c, d), mc(10), null);
+
+        assertEquals(BigDecimal.valueOf(10), result.getValue()); // 1 + 2 + 3 + 5
+        assertOperationCount(1);
+    }
+
+    @Test
+    void addBulk_single_element() {
+        var a = wrap("1", "a");
+        var b = wrap("7", "b");
+        var result = a.addBulk(List.of(b), mc(10), null);
+
+        assertEquals(BigDecimal.valueOf(8), result.getValue());
+    }
+
+    @Test
+    void addBulk_tracks_argument_count() {
+        var a = wrap("1", "a");
+        var b = wrap("2", "b");
+        var c = wrap("3", "c");
+        var d = wrap("4", "d");
+        a.addBulk(List.of(b, c, d), mc(10), null);
+
+        // a, b0, b1, b2 + mc = 5 arguments tracked
+        assertEquals(5, ctx.snapshot().operations().get(0).arguments().size());
+    }
+
+    @Test
+    void addBulk_null_throws_npe() {
+        var a = wrap("1", "a");
+        assertThrows(NullPointerException.class, () -> a.addBulk(null, mc(10), null));
+    }
+
+    // ── subtractBulk ──────────────────────────────────────────────────────────
+
+    @Test
+    void subtractBulk_subtracts_sequentially() {
+        var a = wrap("1", "a");
+        var b = wrap("20", "b");
+        var c = wrap("5", "c");
+        var d = wrap("3", "d");
+        var result = a.subtractBulk(List.of(b, c, d), mc(10), null);
+
+        assertEquals(BigDecimal.valueOf(-27), result.getValue()); // 1 - 20 - 5 - 3
+        assertOperationCount(1);
+    }
+
+    @Test
+    void subtractBulk_null_throws_npe() {
+        var a = wrap("1", "a");
+        assertThrows(NullPointerException.class, () -> a.subtractBulk(null, mc(10), null));
+    }
+
+    // ── multiplyBulk ──────────────────────────────────────────────────────────
+
+    @Test
+    void multiplyBulk_multiplies_all_values_in_list() {
+        var a = wrap("1", "a");
+        var b = wrap("2", "b");
+        var c = wrap("3", "c");
+        var d = wrap("4", "d");
+        var result = a.multiplyBulk(List.of(b, c, d), mc(10), null);
+
+        assertEquals(BigDecimal.valueOf(24), result.getValue()); // 1 * 2 * 3 * 4
+        assertOperationCount(1);
+    }
+
+    @Test
+    void multiplyBulk_single_element() {
+        var a = wrap("1", "a");
+        var b = wrap("5", "a");
+        var result = a.multiplyBulk(List.of(b), mc(10), null);
+
+        assertEquals(BigDecimal.valueOf(5), result.getValue());
+    }
+
+    @Test
+    void multiplyBulk_tracks_argument_count() {
+        var a = wrap("1", "a");
+        var b = wrap("2", "b");
+        var c = wrap("3", "c");
+        var d = wrap("4", "d");
+        a.multiplyBulk(List.of(b, c, d), mc(10), null);
+
+        // a, b, c, d + mc = 5 arguments tracked
+        assertEquals(5, ctx.snapshot().operations().get(0).arguments().size());
+    }
+
+    @Test
+    void multiplyBulk_null_throws_npe() {
+        var a = wrap("1", "a");
+        assertThrows(NullPointerException.class, () -> a.multiplyBulk(null, mc(10), null));
+    }
+
+    // ── maxBulk ───────────────────────────────────────────────────────────────
+
+    @Test
+    void maxBulk_returns_largest_value() {
+        var a = wrap("1", "a");
+        var b = wrap("7.5", "b");
+        var c = wrap("3.1", "c");
+        var d = wrap("9.9", "d");
+        var result = a.maxBulk(List.of(b, c, d), null);
+
+        assertValue(result, "9.9");
+        assertOperationCount(1);
+    }
+
+    @Test
+    void maxBulk_single_element() {
+        var a = wrap("1", "a");
+        var b = wrap("42.0", "b");
+        var result = a.maxBulk(List.of(b), null);
+
+        assertValue(result, "42.0");
+    }
+
+    @Test
+    void maxBulk_with_negative_values() {
+        var a = wrap("1", "a");
+        var b = wrap("-3", "b");
+        var c = wrap("-1", "c");
+        var d = wrap("-7", "d");
+        var result = a.maxBulk(List.of(b, c, d), null);
+
+        assertValue(result, "-1");
+    }
+
+    @Test
+    void maxBulk_tracks_argument_count() {
+        var a = wrap("1", "a");
+        var b = wrap("2", "b");
+        var c = wrap("3", "c");
+        var d = wrap("4", "d");
+        a.maxBulk(List.of(b, c, d), null);
+
+        assertEquals(3, ctx.snapshot().operations().get(0).arguments().size());
+    }
+
+    @Test
+    void maxBulk_null_throws_npe() {
+        var a = wrap("1", "a");
+        assertThrows(NullPointerException.class, () -> a.maxBulk(null, null));
+    }
+
+    // ── minBulk ───────────────────────────────────────────────────────────────
+
+    @Test
+    void minBulk_returns_smallest_value() {
+        var a = wrap("1", "a");
+        var b = wrap("7.5", "b");
+        var c = wrap("3.1", "c");
+        var d = wrap("9.9", "d");
+        var result = a.minBulk(List.of(b, c, d), null);
+
+        assertValue(result, "3.1");
+        assertOperationCount(1);
+    }
+
+    @Test
+    void minBulk_single_element() {
+        var a = wrap("1", "a");
+        var b = wrap("0.001", "b");
+        var result = a.minBulk(List.of(b), null);
+
+        assertValue(result, "0.001");
+    }
+
+    @Test
+    void minBulk_with_negative_values() {
+        var a = wrap("1", "a");
+        var b = wrap("-1.5", "b");
+        var c = wrap("-0.5", "c");
+        var d = wrap("2.0", "d");
+        var result = a.minBulk(List.of(b, c, d), null);
+
+        assertValue(result, "-1.5");
+    }
+
+    @Test
+    void minBulk_tracks_argument_count() {
+        var a = wrap("1", "a");
+        var b = wrap("10", "b");
+        var c = wrap("20", "c");
+        var d = wrap("30", "d");
+        a.minBulk(List.of(b, c, d), null);
+
+        assertEquals(3, ctx.snapshot().operations().get(0).arguments().size());
+    }
+
+    @Test
+    void minBulk_null_throws_npe() {
+        var a = wrap("1", "a");
+        assertThrows(NullPointerException.class, () -> a.minBulk(null, null));
+    }
+
     @Test
     void json_contains_variables_as_object_and_operations_as_array() {
         var mathContext = mc(2, RoundingMode.DOWN);
         wrap("1", "x");
         wrap("2", "y");
-        var a = ctx.wrapBigDecimal(new BigDecimal("1"), Descriptor.descriptor("a"));
-        var b = ctx.wrapBigDecimal(new BigDecimal("2"), Descriptor.descriptor("b"));
+        var a = wrap("1", "a");
+        var b = wrap("2", "b");
         a.add(b, mathContext, null);
 
         String json = ctx.getEnvironment().toJson(ctx.snapshot());
