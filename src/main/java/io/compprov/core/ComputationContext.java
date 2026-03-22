@@ -135,14 +135,17 @@ public class ComputationContext {
             throw new NullPointerException("Wrapper for %s is not found".formatted(variable.value().getClass()));
         }
 
+        final var createdAt = variable.track().getKind() == VariableKind.INPUT
+                ? variable.track().getCreatedAt() : environment.clock.instant().atZone(environment.zoneId);
         final var track = new VariableTrack(
                 variable.track().getNumericId(),
-                environment.clock.instant().atZone(environment.zoneId),
+                createdAt,
                 variable.track().getKind(),
                 variable.track().getDescriptor(),
                 variable.value().getClass().getName());
         final var wrapped = wrapper.wrap(this, track, variable.value());
         data.variables.put(wrapped.getVariableTrack().getId(), wrapped);
+        data.variableCounter.set(variable.track().getNumericId());
         return wrapped;
     }
 
@@ -171,6 +174,7 @@ public class ComputationContext {
                 operation.arguments(),
                 reWrappedResult.getVariableTrack().getId());
         data.operations.put(wrappedOperation.getOperationTrack().getId(), wrappedOperation);
+        data.operationCounter.set(wrappedOperation.getOperationTrack().getNumericId());
 
         return reWrappedResult;
     }
