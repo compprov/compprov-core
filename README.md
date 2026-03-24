@@ -17,6 +17,7 @@ output was derived from its inputs.
 - [Built-in types](#built-in-types)
 - [Thread safety](#thread-safety)
 - [Visualization](#visualization)
+- [Examples](#examples)
 - [License](#license)
 
 ---
@@ -322,6 +323,109 @@ Plots numeric variable values across one or more datasets side-by-side.
 Supports points, line, and table views with configurable X-axis labels.
 
 ![Plot View](https://raw.githubusercontent.com/compprov/compprov-render/master/screenshots/plot.png)
+
+---
+
+## Examples
+
+The `io.compprov.examples` package contains three self-contained examples that each demonstrate
+a different aspect of the framework.
+
+| Example | Package | Domain | Key technique |
+|---|---|---|---|
+| [Net Asset Value (NAV)](#net-asset-value-nav) | `io.compprov.examples.nav` | Crypto-portfolio accounting | Custom domain type wrappers |
+| [Gauge Block Calibration](#gauge-block-calibration) | `io.compprov.examples.gaugeblock` | Precision length metrology | Pure `BigDecimal` scalar formula chain |
+| [Hydrological Model Evaluation](#hydrological-model-evaluation) | `io.compprov.examples.hydrology` | River discharge modelling | List-based tracked operations |
+
+---
+
+### Net Asset Value (NAV)
+
+**`io.compprov.examples.nav`** · `NetAssetValueCalculator.calculate()`
+
+Computes the total USD value of a multi-asset crypto portfolio (BTC, ETH, USDC positions held
+across Binance, staking, and Morpho DeFi) by converting each position to USD at a spot rate
+and summing the results.
+
+The primary focus is showing **how to wrap custom domain types**. The domain model uses `Amount`
+and `Rate` objects rather than raw `BigDecimal`, and the example integrates them with the
+framework without modifying them — using the three-step pattern:
+
+1. **`WrappedAmount` / `WrappedRate`** extend `AbstractWrappedVariable<T>` and declare their
+   operations (`add`, `convert`, `addBulk`) as `Descriptor` constants mapped to computation lambdas.
+2. **`AmountWrapper` / `RateWrapper`** implement `VariableWrapper<T>` — the one-method factory
+   the framework calls to instantiate tracked variables.
+3. **`NavComputationContext`** extends `DefaultComputationContext`, registers both wrappers with
+   the shared `ComputationEnvironment`, and exposes typed `wrap(Amount, ...)` / `wrap(Rate, ...)`
+   convenience overloads.
+
+After the calculation the snapshot is serialized to JSON, then deserialized and replayed via
+`NavComputationContext.compute()` — verifying that the CPG is round-trip stable and the
+replayed output matches the original result (`$377,460`).
+
+---
+
+### Gauge Block Calibration
+
+**`io.compprov.examples.gaugeblock`** · `GaugeBlockCalibration.calibrate()`
+
+Reproduces the interferometric calibration of a 7 mm tungsten carbide gauge block (NRC 91A)
+from the following paper, which uses this measurement as a demonstration of metrological
+provenance management:
+
+> Ryan M. White, *Provenance in the Context of Metrological Traceability*, Metrology 2025, 5(3), 52.
+> DOI: [10.3390/metrology5030052](https://doi.org/10.3390/metrology5030052)
+
+The computation chain has three stages, all tracked in the CPG:
+
+1. **Refractive index** — the Birch–Downs modified Ciddor equation (8 tracked steps) converts
+   air temperature, pressure, relative humidity, CO₂ concentration, and saturation vapor
+   pressure into the refractive index *n* of the measurement medium.
+2. **Interferometric length** — the HeNe laser vacuum wavelength (632.99 nm) divided by *n*
+   gives the air wavelength; the observed fringe order `m + f` gives the raw length
+   `L_raw = (m + f) × λ_air / 2`.
+3. **Thermal correction** — the raw length is corrected to the ISO 1 reference temperature
+   (20 °C) using the tungsten carbide expansion coefficient α = 4.23 × 10⁻⁶ K⁻¹ from
+   the paper: `L_cal = L_raw / (1 + α × ΔT)`.
+
+The deviation from the 7 mm nominal length is asserted to round to **+2 nm**, matching the
+paper's reported result (expanded uncertainty U = 31 nm, k = 2).
+
+This example uses only built-in `WrappedBigDecimal` arithmetic — no custom wrappers needed —
+showing that the framework handles complex pure-scalar formula chains out of the box.
+
+---
+
+### Hydrological Model Evaluation
+
+**`io.compprov.examples.hydrology`** · `MhmDischargeEvaluation.evaluateParameterSetP1()`
+
+Evaluates the mesoscale Hydrologic Model (mHM) output against observed river discharge at the
+Moselle River basin upstream of Perl (~11 500 km², Luxembourg/Germany), as described in:
+
+> Villamar et al., *Archivist: a metadata management tool for facilitating FAIR research*,
+> Scientific Data, 2025.
+> DOI: [10.1038/s41597-025-04521-6](https://doi.org/10.1038/s41597-025-04521-6)
+
+The metric is the **Kling-Gupta Efficiency (KGE)** (Gupta et al. 2009):
+
+```
+KGE = 1 − √[ (r−1)² + (α−1)² + (β−1)² ]
+
+  r = Pearson correlation = Σ(devObs · devSim) / √(Σ devObs² · Σ devSim²)
+  α = variability ratio  = σ_sim / σ_obs
+  β = bias ratio         = μ_sim / μ_obs
+```
+
+KGE = 1 is perfect; values below 0 indicate the model is worse than the observed mean as a
+predictor. The paper reports that parameter set P₁ outperforms P₂ with scores mostly above 0.5.
+
+The computation uses `ArrayList<WrappedBigDecimal>` with loops and `addBulk`, demonstrating the
+pattern for **list-based tracked operations** where the number of time steps is dynamic.
+The 8-step chain (means → deviations → squared deviations and cross products → sums → r → α
+→ β → KGE) is fully recorded in the CPG, with every intermediate quantity named and traceable.
+The synthetic dataset is engineered so that r = 1, β = 1, α = 0.9, giving **KGE = 0.9 exactly**,
+verified by exact `BigDecimal` equality.
 
 ---
 
