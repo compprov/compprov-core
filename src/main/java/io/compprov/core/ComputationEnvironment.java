@@ -1,7 +1,9 @@
 package io.compprov.core;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.compprov.core.meta.Descriptor;
 import io.compprov.core.variable.ValueWithDescriptor;
 import io.compprov.core.variable.VariableTrack;
@@ -47,6 +49,16 @@ public class ComputationEnvironment {
         wrappers.put(type, wrapper);
     }
 
+    public <T> void registerWrapper(Class<T> type, VariableWrapper<T> wrapper, JsonDeserializer<T> deserializer) {
+        Objects.requireNonNull(type, "type");
+        Objects.requireNonNull(wrapper, "wrapper");
+        Objects.requireNonNull(deserializer, "deserializer");
+        wrappers.put(type, wrapper);
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(type, deserializer);
+        mapper.registerModule(module);
+    }
+
     public String toJson(Snapshot snapshot) {
         try {
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(snapshot);
@@ -64,13 +76,13 @@ public class ComputationEnvironment {
     }
 
     public Snapshot copyWith(Snapshot snapshot, Descriptor descriptor, Map<String, ValueWithDescriptor> updates) {
-        List<Snapshot.Variable> updateVariables = new ArrayList<>();
+        List<Snapshot.Variable> variables = new ArrayList<>();
         snapshot.variables().forEach(variable -> {
             final var update = updates.get(variable.track().getId());
             if (update == null) {
-                updateVariables.add(variable);
+                variables.add(variable);
             } else {
-                updateVariables.add(new Snapshot.Variable(
+                variables.add(new Snapshot.Variable(
                         new VariableTrack(
                                 variable.track().getNumericId(),
                                 clock.instant().atZone(zoneId),
@@ -80,7 +92,7 @@ public class ComputationEnvironment {
                         update.value()));
             }
         });
-        return new Snapshot(descriptor, updateVariables, snapshot.operations());
+        return new Snapshot(descriptor, variables, snapshot.operations());
     }
 
     public String toHumanReadableLog(Snapshot snapshot) {
@@ -144,5 +156,9 @@ public class ComputationEnvironment {
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("JSON serialization failed", e);
         }
+    }
+
+    public ObjectMapper getMapper() {
+        return mapper;
     }
 }
