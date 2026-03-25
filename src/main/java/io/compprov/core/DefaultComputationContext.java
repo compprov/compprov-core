@@ -19,6 +19,10 @@ public class DefaultComputationContext extends ComputationContext {
         super(environment, dataContext);
     }
 
+    public DefaultComputationContext(ComputationEnvironment environment, DataContext dataContext, Snapshot snapshot) {
+        super(environment, dataContext, snapshot);
+    }
+
     /**
      * Wraps a {@link BigDecimal} input value and registers it in the context.
      *

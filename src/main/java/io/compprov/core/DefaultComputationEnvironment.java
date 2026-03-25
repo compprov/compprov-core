@@ -20,6 +20,7 @@ import java.math.MathContext;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 /**
  * Thread safe. Ready-to-use {@link ComputationEnvironment} pre-configured with serializers for all built-in
@@ -64,5 +65,12 @@ public class DefaultComputationEnvironment extends ComputationEnvironment {
         registerWrapper(Integer.class, new IntegerWrapper());
         registerWrapper(Long.class, new LongWrapper());
         registerWrapper(MathContext.class, new MathContextWrapper());
+    }
+
+    @Override
+    public ComputationContext compute(Snapshot snapshot) {
+        Objects.requireNonNull(snapshot, "snapshot");
+
+        return new DefaultComputationContext(this, new DataContext(snapshot.descriptor()), snapshot);
     }
 }

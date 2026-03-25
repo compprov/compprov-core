@@ -172,7 +172,6 @@ public class ComputationEnvironment {
     }
 
     public ComputationContext compute(Snapshot snapshot) {
-        Objects.requireNonNull(this, "environment");
         Objects.requireNonNull(snapshot, "snapshot");
 
         return new ComputationContext(this, new DataContext(snapshot.descriptor()), snapshot);
