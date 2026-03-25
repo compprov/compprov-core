@@ -137,11 +137,11 @@ Snapshot restored = env.fromJson(json);
 
 ### Replay a computation
 
-`ComputationContext.compute()` replays all recorded operations against the given snapshot,
+`env.compute()` replays all recorded operations against the given snapshot,
 producing a new context with freshly computed outputs:
 
 ```java
-var replayed = DefaultComputationContext.compute(new DefaultComputationEnvironment(), restored);
+var replayed = env.compute(restored);
 BigDecimal replayedTotal = (BigDecimal) replayed.getVariable("o_5").getValue();
 ```
 
@@ -157,7 +157,7 @@ Snapshot modified = env.copyWith(
                 Descriptor.descriptor("tax-rate"),
                 new BigDecimal("0.10"))));  // 10% tax instead of 8%
 
-var updated = DefaultComputationContext.compute(new DefaultComputationEnvironment(), modified);
+var updated = env.compute(modified);
 // updated.getVariable("o_5") now reflects the new total
 ```
 
@@ -360,8 +360,8 @@ framework without modifying them — using the three-step pattern:
    convenience overloads.
 
 After the calculation the snapshot is serialized to JSON, then deserialized and replayed via
-`NavComputationContext.compute()` — verifying that the CPG is round-trip stable and the
-replayed output matches the original result (`$377,460`).
+`NavComputationContext.environment.compute()` — verifying that the CPG is round-trip stable and the
+replayed output matches the original result.
 
 ---
 
