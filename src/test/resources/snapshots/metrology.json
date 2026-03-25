@@ -1,0 +1,2075 @@
+{
+  "descriptor" : {
+    "name" : "NRC 91A 7mm gauge block calibration, White 2025",
+    "meta" : { }
+  },
+  "variables" : [ {
+    "track" : {
+      "id" : "i_1",
+      "numericId" : 1,
+      "createdAt" : "2026-03-25T10:00:53.8963589Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "computation precision",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.MathContext"
+    },
+    "value" : {
+      "precision" : 34,
+      "roundingMode" : "HALF_EVEN"
+    }
+  }, {
+    "track" : {
+      "id" : "i_2",
+      "numericId" : 2,
+      "createdAt" : "2026-03-25T10:00:53.9008767Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "constant 1",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1
+  }, {
+    "track" : {
+      "id" : "i_3",
+      "numericId" : 3,
+      "createdAt" : "2026-03-25T10:00:53.902876Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "constant 2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 2
+  }, {
+    "track" : {
+      "id" : "i_4",
+      "numericId" : 4,
+      "createdAt" : "2026-03-25T10:00:53.902876Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "lambda_vac1: TESA SG-L vacuum wavelength, nm",
+        "meta" : {
+          "report" : "OFS-2024-0006",
+          "date" : "2024-05-02"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 543.5153892
+  }, {
+    "track" : {
+      "id" : "i_5",
+      "numericId" : 5,
+      "createdAt" : "2026-03-25T10:00:53.9038797Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "lambda_vac2: TESA SG-O vacuum wavelength, nm",
+        "meta" : {
+          "report" : "OFS-2024-0005",
+          "date" : "2024-04-30"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 611.9703724
+  }, {
+    "track" : {
+      "id" : "i_6",
+      "numericId" : 6,
+      "createdAt" : "2026-03-25T10:00:53.9038797Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "lambda_vac3: Spectra 117A-1 HeNe vacuum wavelength, nm",
+        "meta" : {
+          "report" : "OFS-2024-0002",
+          "date" : "2024-05-08"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 632.9909778
+  }, {
+    "track" : {
+      "id" : "i_7",
+      "numericId" : 7,
+      "createdAt" : "2026-03-25T10:00:53.9038797Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "T_air: air temperature, degC",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 20.00
+  }, {
+    "track" : {
+      "id" : "i_8",
+      "numericId" : 8,
+      "createdAt" : "2026-03-25T10:00:53.9038797Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "P_air: air pressure, Pa",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 101325.0
+  }, {
+    "track" : {
+      "id" : "i_9",
+      "numericId" : 9,
+      "createdAt" : "2026-03-25T10:00:53.9038797Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "h: relative humidity",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.50
+  }, {
+    "track" : {
+      "id" : "i_10",
+      "numericId" : 10,
+      "createdAt" : "2026-03-25T10:00:53.9038797Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "svp: saturation vapor pressure at T_air (Wexler 1976), Pa",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 2338.0
+  }, {
+    "track" : {
+      "id" : "i_11",
+      "numericId" : 11,
+      "createdAt" : "2026-03-25T10:00:53.9038797Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "xCO2: CO2 mole fraction, ppm",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 450.0
+  }, {
+    "track" : {
+      "id" : "i_12",
+      "numericId" : 12,
+      "createdAt" : "2026-03-25T10:00:53.9038797Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "nm-to-um conversion factor",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1000
+  }, {
+    "track" : {
+      "id" : "o_13",
+      "numericId" : 13,
+      "createdAt" : "2026-03-25T10:00:53.9048796Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "lambda_vac3 in um",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.6329909778
+  }, {
+    "track" : {
+      "id" : "o_14",
+      "numericId" : 14,
+      "createdAt" : "2026-03-25T10:00:53.9058792Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "sigma: vacuum wavenumber, um^-1",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1.579801347999560697688035830958727
+  }, {
+    "track" : {
+      "id" : "o_15",
+      "numericId" : 15,
+      "createdAt" : "2026-03-25T10:00:53.9058792Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "sigma^2, um^-2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 2.495772299141229083230759171428315
+  }, {
+    "track" : {
+      "id" : "i_16",
+      "numericId" : 16,
+      "createdAt" : "2026-03-25T10:00:53.9058792Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "Sellmeier k0 [×10^-8]",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 8342.54
+  }, {
+    "track" : {
+      "id" : "i_17",
+      "numericId" : 17,
+      "createdAt" : "2026-03-25T10:00:53.9058792Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "Sellmeier k1 numerator",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 2406147
+  }, {
+    "track" : {
+      "id" : "i_18",
+      "numericId" : 18,
+      "createdAt" : "2026-03-25T10:00:53.9058792Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "Sellmeier k2 numerator",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 15998
+  }, {
+    "track" : {
+      "id" : "i_19",
+      "numericId" : 19,
+      "createdAt" : "2026-03-25T10:00:53.9058792Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "Sellmeier UV resonance, um^-2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 130
+  }, {
+    "track" : {
+      "id" : "i_20",
+      "numericId" : 20,
+      "createdAt" : "2026-03-25T10:00:53.9058792Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "Sellmeier IR resonance, um^-2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 38.9
+  }, {
+    "track" : {
+      "id" : "o_21",
+      "numericId" : 21,
+      "createdAt" : "2026-03-25T10:00:53.9058792Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "130 - sigma^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 127.5042277008587709167692408285717
+  }, {
+    "track" : {
+      "id" : "o_22",
+      "numericId" : 22,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "38.9 - sigma^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 36.40422770085877091676924082857168
+  }, {
+    "track" : {
+      "id" : "o_23",
+      "numericId" : 23,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "2406147 / (130 - sigma^2)",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 18871.11543975724998562805687371926
+  }, {
+    "track" : {
+      "id" : "o_24",
+      "numericId" : 24,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "15998 / (38.9 - sigma^2)",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 439.4544537919866185168029170964151
+  }, {
+    "track" : {
+      "id" : "o_25",
+      "numericId" : 25,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "Ns partial",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 27213.65543975724998562805687371926
+  }, {
+    "track" : {
+      "id" : "o_26",
+      "numericId" : 26,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "N_s: standard refractivity [×10^-8]",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 27653.10989354923660414485979081568
+  }, {
+    "track" : {
+      "id" : "i_27",
+      "numericId" : 27,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "CO2 reference concentration, ppm",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 450
+  }, {
+    "track" : {
+      "id" : "i_28",
+      "numericId" : 28,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "CO2 correction coefficient",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 5.34E-7
+  }, {
+    "track" : {
+      "id" : "o_29",
+      "numericId" : 29,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "xCO2 - 450",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.0
+  }, {
+    "track" : {
+      "id" : "o_30",
+      "numericId" : 30,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "CO2 correction term",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0E-10
+  }, {
+    "track" : {
+      "id" : "o_31",
+      "numericId" : 31,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "CO2 correction factor",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1.0000000000
+  }, {
+    "track" : {
+      "id" : "o_32",
+      "numericId" : 32,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "N_s corrected for CO2 [×10^-8]",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 27653.10989354923660414485979081568
+  }, {
+    "track" : {
+      "id" : "i_33",
+      "numericId" : 33,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "B&D denominator constant",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 96095.43
+  }, {
+    "track" : {
+      "id" : "i_34",
+      "numericId" : 34,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "B&D pressure coefficient a",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.601
+  }, {
+    "track" : {
+      "id" : "i_35",
+      "numericId" : 35,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "B&D pressure coefficient b",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.00972
+  }, {
+    "track" : {
+      "id" : "i_36",
+      "numericId" : 36,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "scale factor 1e-8",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1E-8
+  }, {
+    "track" : {
+      "id" : "i_37",
+      "numericId" : 37,
+      "createdAt" : "2026-03-25T10:00:53.9068778Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "B&D thermal coefficient",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.003661
+  }, {
+    "track" : {
+      "id" : "o_38",
+      "numericId" : 38,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "b*T",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.1944000
+  }, {
+    "track" : {
+      "id" : "o_39",
+      "numericId" : 39,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "a - b*T_air",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.4066000
+  }, {
+    "track" : {
+      "id" : "o_40",
+      "numericId" : 40,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "P*1e-8",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.001013250
+  }, {
+    "track" : {
+      "id" : "o_41",
+      "numericId" : 41,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "P*1e-8*(a - b*T_air)",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.0004119874500000
+  }, {
+    "track" : {
+      "id" : "o_42",
+      "numericId" : 42,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "pressure correction factor (1 + P*1e-8*(a-b*T))",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1.0004119874500000
+  }, {
+    "track" : {
+      "id" : "o_43",
+      "numericId" : 43,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "0.003661*T_air",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.07322000
+  }, {
+    "track" : {
+      "id" : "o_44",
+      "numericId" : 44,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "thermal denominator factor (1 + 0.003661*T)",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1.07322000
+  }, {
+    "track" : {
+      "id" : "o_45",
+      "numericId" : 45,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "B&D full denominator (96095.43*(1+0.003661*T))",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 103131.5373846000
+  }, {
+    "track" : {
+      "id" : "o_46",
+      "numericId" : 46,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "N_s_co2 * P",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 2801951359.963876398914977918304399
+  }, {
+    "track" : {
+      "id" : "o_47",
+      "numericId" : 47,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "N_s_co2 * P * pressCorr",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 2803105728.759691948444682082823768
+  }, {
+    "track" : {
+      "id" : "o_48",
+      "numericId" : 48,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "N_tp: dry air refractivity [×10^-8]",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 27179.90829814064748186375871911001
+  }, {
+    "track" : {
+      "id" : "i_49",
+      "numericId" : 49,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "water vapor enhancement alpha",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1.00070
+  }, {
+    "track" : {
+      "id" : "i_50",
+      "numericId" : 50,
+      "createdAt" : "2026-03-25T10:00:53.9078758Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "water vapor enhancement beta",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 3.7E-8
+  }, {
+    "track" : {
+      "id" : "i_51",
+      "numericId" : 51,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "water vapor enhancement gamma",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1.24E-7
+  }, {
+    "track" : {
+      "id" : "o_52",
+      "numericId" : 52,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "T_air^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 400.0000
+  }, {
+    "track" : {
+      "id" : "o_53",
+      "numericId" : 53,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "beta*P_air",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.0037490250
+  }, {
+    "track" : {
+      "id" : "o_54",
+      "numericId" : 54,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "alpha + beta*P",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1.0044490250
+  }, {
+    "track" : {
+      "id" : "o_55",
+      "numericId" : 55,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "gamma*T_air^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.0000496000000
+  }, {
+    "track" : {
+      "id" : "o_56",
+      "numericId" : 56,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "f_enh: water vapor enhancement factor",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1.0043994250000
+  }, {
+    "track" : {
+      "id" : "o_57",
+      "numericId" : 57,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "h * f_enh",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.502199712500000
+  }, {
+    "track" : {
+      "id" : "o_58",
+      "numericId" : 58,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "pv: partial pressure of water vapor, Pa",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1174.1429278250000000
+  }, {
+    "track" : {
+      "id" : "i_59",
+      "numericId" : 59,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "Edlen water vapor coefficient W1",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 3.8020
+  }, {
+    "track" : {
+      "id" : "i_60",
+      "numericId" : 60,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "Edlen water vapor coefficient W2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.0384
+  }, {
+    "track" : {
+      "id" : "i_61",
+      "numericId" : 61,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "scale factor 1e-3",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.001
+  }, {
+    "track" : {
+      "id" : "o_62",
+      "numericId" : 62,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "W2*sigma^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.09583765628702319679606115218284730
+  }, {
+    "track" : {
+      "id" : "o_63",
+      "numericId" : 63,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "W1 - W2*sigma^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 3.706162343712976803203938847817153
+  }, {
+    "track" : {
+      "id" : "o_64",
+      "numericId" : 64,
+      "createdAt" : "2026-03-25T10:00:53.9088768Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "(W1-W2*sigma^2)*pv",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 4351.564305241918565160181599348289
+  }, {
+    "track" : {
+      "id" : "o_65",
+      "numericId" : 65,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "water vapor refractivity magnitude [×10^-8]",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 4.351564305241918565160181599348289
+  }, {
+    "track" : {
+      "id" : "o_66",
+      "numericId" : 66,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "N_v: water vapor refractivity correction [×10^-8]",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : -4.351564305241918565160181599348289
+  }, {
+    "track" : {
+      "id" : "o_67",
+      "numericId" : 67,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "N_total = N_tp + N_v [×10^-8]",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 27175.55673383540556329859853751066
+  }, {
+    "track" : {
+      "id" : "o_68",
+      "numericId" : 68,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "n-1 = N_total * 1e-8",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.0002717555673383540556329859853751066
+  }, {
+    "track" : {
+      "id" : "o_69",
+      "numericId" : 69,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "n: refractive index of air (Ciddor / Birch-Downs)",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1.000271755567338354055632985985375
+  }, {
+    "track" : {
+      "id" : "o_70",
+      "numericId" : 70,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "lambda_air3: HeNe air wavelength, nm",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 632.8190057120802205238577379364055
+  }, {
+    "track" : {
+      "id" : "o_71",
+      "numericId" : 71,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "lambda_air3/2: half-wavelength, nm",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 316.4095028560401102619288689682028
+  }, {
+    "track" : {
+      "id" : "i_72",
+      "numericId" : 72,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "m: integer fringe order (method of exact fractions)",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 22123
+  }, {
+    "track" : {
+      "id" : "i_73",
+      "numericId" : 73,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "f: fractional fringe order (observed)",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.23675
+  }, {
+    "track" : {
+      "id" : "o_74",
+      "numericId" : 74,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "m+f: total fringe order",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 22123.23675
+  }, {
+    "track" : {
+      "id" : "o_75",
+      "numericId" : 75,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "L_raw: raw interferometric length, nm",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 7000002.341633976526820756879843279
+  }, {
+    "track" : {
+      "id" : "i_76",
+      "numericId" : 76,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "alpha: thermal expansion coefficient of tungsten carbide, K^-1",
+        "meta" : {
+          "source" : "White 2025, Appendix B"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.00000423
+  }, {
+    "track" : {
+      "id" : "i_77",
+      "numericId" : 77,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "T_part: part temperature, degC",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 20.001
+  }, {
+    "track" : {
+      "id" : "i_78",
+      "numericId" : 78,
+      "createdAt" : "2026-03-25T10:00:53.9098782Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "T_ref: ISO 1 reference temperature, degC",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 20.000
+  }, {
+    "track" : {
+      "id" : "o_79",
+      "numericId" : 79,
+      "createdAt" : "2026-03-25T10:00:53.9108781Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "deltaT: T_part - T_ref, K",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.001
+  }, {
+    "track" : {
+      "id" : "o_80",
+      "numericId" : 80,
+      "createdAt" : "2026-03-25T10:00:53.9108781Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "alpha*deltaT",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 4.23E-9
+  }, {
+    "track" : {
+      "id" : "o_81",
+      "numericId" : 81,
+      "createdAt" : "2026-03-25T10:00:53.9108781Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "1 + alpha*deltaT: thermal correction factor",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1.00000000423
+  }, {
+    "track" : {
+      "id" : "o_82",
+      "numericId" : 82,
+      "createdAt" : "2026-03-25T10:00:53.9108781Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "L_cal: thermally corrected length, nm",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 7000002.312023966746959377540205112
+  }, {
+    "track" : {
+      "id" : "i_83",
+      "numericId" : 83,
+      "createdAt" : "2026-03-25T10:00:53.9108781Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "L_nom: nominal gauge block length (7 mm), nm",
+        "meta" : {
+          "source" : "White 2025"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 7000000
+  }, {
+    "track" : {
+      "id" : "o_84",
+      "numericId" : 84,
+      "createdAt" : "2026-03-25T10:00:53.9108781Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "deltaL: length deviation from nominal, nm",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 2.312023966746959377540205112
+  } ],
+  "operations" : [ {
+    "track" : {
+      "id" : "op_1",
+      "numericId" : 1,
+      "startedAt" : "2026-03-25T10:00:53.9038797Z",
+      "finishedAt" : "2026-03-25T10:00:53.9048796Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_6",
+      "b" : "i_12",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_13"
+  }, {
+    "track" : {
+      "id" : "op_2",
+      "numericId" : 2,
+      "startedAt" : "2026-03-25T10:00:53.9058792Z",
+      "finishedAt" : "2026-03-25T10:00:53.9058792Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_2",
+      "b" : "o_13",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_14"
+  }, {
+    "track" : {
+      "id" : "op_3",
+      "numericId" : 3,
+      "startedAt" : "2026-03-25T10:00:53.9058792Z",
+      "finishedAt" : "2026-03-25T10:00:53.9058792Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_14",
+      "b" : "o_14",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_15"
+  }, {
+    "track" : {
+      "id" : "op_4",
+      "numericId" : 4,
+      "startedAt" : "2026-03-25T10:00:53.9058792Z",
+      "finishedAt" : "2026-03-25T10:00:53.9058792Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_19",
+      "b" : "o_15",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_21"
+  }, {
+    "track" : {
+      "id" : "op_5",
+      "numericId" : 5,
+      "startedAt" : "2026-03-25T10:00:53.9068778Z",
+      "finishedAt" : "2026-03-25T10:00:53.9068778Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_20",
+      "b" : "o_15",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_22"
+  }, {
+    "track" : {
+      "id" : "op_6",
+      "numericId" : 6,
+      "startedAt" : "2026-03-25T10:00:53.9068778Z",
+      "finishedAt" : "2026-03-25T10:00:53.9068778Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_17",
+      "b" : "o_21",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_23"
+  }, {
+    "track" : {
+      "id" : "op_7",
+      "numericId" : 7,
+      "startedAt" : "2026-03-25T10:00:53.9068778Z",
+      "finishedAt" : "2026-03-25T10:00:53.9068778Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_18",
+      "b" : "o_22",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_24"
+  }, {
+    "track" : {
+      "id" : "op_8",
+      "numericId" : 8,
+      "startedAt" : "2026-03-25T10:00:53.9068778Z",
+      "finishedAt" : "2026-03-25T10:00:53.9068778Z",
+      "descriptor" : {
+        "name" : "add",
+        "meta" : {
+          "formula" : "(a+b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_16",
+      "b" : "o_23",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_25"
+  }, {
+    "track" : {
+      "id" : "op_9",
+      "numericId" : 9,
+      "startedAt" : "2026-03-25T10:00:53.9068778Z",
+      "finishedAt" : "2026-03-25T10:00:53.9068778Z",
+      "descriptor" : {
+        "name" : "add",
+        "meta" : {
+          "formula" : "(a+b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_25",
+      "b" : "o_24",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_26"
+  }, {
+    "track" : {
+      "id" : "op_10",
+      "numericId" : 10,
+      "startedAt" : "2026-03-25T10:00:53.9068778Z",
+      "finishedAt" : "2026-03-25T10:00:53.9068778Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_11",
+      "b" : "i_27",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_29"
+  }, {
+    "track" : {
+      "id" : "op_11",
+      "numericId" : 11,
+      "startedAt" : "2026-03-25T10:00:53.9068778Z",
+      "finishedAt" : "2026-03-25T10:00:53.9068778Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_28",
+      "b" : "o_29",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_30"
+  }, {
+    "track" : {
+      "id" : "op_12",
+      "numericId" : 12,
+      "startedAt" : "2026-03-25T10:00:53.9068778Z",
+      "finishedAt" : "2026-03-25T10:00:53.9068778Z",
+      "descriptor" : {
+        "name" : "add",
+        "meta" : {
+          "formula" : "(a+b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_2",
+      "b" : "o_30",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_31"
+  }, {
+    "track" : {
+      "id" : "op_13",
+      "numericId" : 13,
+      "startedAt" : "2026-03-25T10:00:53.9068778Z",
+      "finishedAt" : "2026-03-25T10:00:53.9068778Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_26",
+      "b" : "o_31",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_32"
+  }, {
+    "track" : {
+      "id" : "op_14",
+      "numericId" : 14,
+      "startedAt" : "2026-03-25T10:00:53.9068778Z",
+      "finishedAt" : "2026-03-25T10:00:53.9078758Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_35",
+      "b" : "i_7",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_38"
+  }, {
+    "track" : {
+      "id" : "op_15",
+      "numericId" : 15,
+      "startedAt" : "2026-03-25T10:00:53.9078758Z",
+      "finishedAt" : "2026-03-25T10:00:53.9078758Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_34",
+      "b" : "o_38",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_39"
+  }, {
+    "track" : {
+      "id" : "op_16",
+      "numericId" : 16,
+      "startedAt" : "2026-03-25T10:00:53.9078758Z",
+      "finishedAt" : "2026-03-25T10:00:53.9078758Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_8",
+      "b" : "i_36",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_40"
+  }, {
+    "track" : {
+      "id" : "op_17",
+      "numericId" : 17,
+      "startedAt" : "2026-03-25T10:00:53.9078758Z",
+      "finishedAt" : "2026-03-25T10:00:53.9078758Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_40",
+      "b" : "o_39",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_41"
+  }, {
+    "track" : {
+      "id" : "op_18",
+      "numericId" : 18,
+      "startedAt" : "2026-03-25T10:00:53.9078758Z",
+      "finishedAt" : "2026-03-25T10:00:53.9078758Z",
+      "descriptor" : {
+        "name" : "add",
+        "meta" : {
+          "formula" : "(a+b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_2",
+      "b" : "o_41",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_42"
+  }, {
+    "track" : {
+      "id" : "op_19",
+      "numericId" : 19,
+      "startedAt" : "2026-03-25T10:00:53.9078758Z",
+      "finishedAt" : "2026-03-25T10:00:53.9078758Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_37",
+      "b" : "i_7",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_43"
+  }, {
+    "track" : {
+      "id" : "op_20",
+      "numericId" : 20,
+      "startedAt" : "2026-03-25T10:00:53.9078758Z",
+      "finishedAt" : "2026-03-25T10:00:53.9078758Z",
+      "descriptor" : {
+        "name" : "add",
+        "meta" : {
+          "formula" : "(a+b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_2",
+      "b" : "o_43",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_44"
+  }, {
+    "track" : {
+      "id" : "op_21",
+      "numericId" : 21,
+      "startedAt" : "2026-03-25T10:00:53.9078758Z",
+      "finishedAt" : "2026-03-25T10:00:53.9078758Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_33",
+      "b" : "o_44",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_45"
+  }, {
+    "track" : {
+      "id" : "op_22",
+      "numericId" : 22,
+      "startedAt" : "2026-03-25T10:00:53.9078758Z",
+      "finishedAt" : "2026-03-25T10:00:53.9078758Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_32",
+      "b" : "i_8",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_46"
+  }, {
+    "track" : {
+      "id" : "op_23",
+      "numericId" : 23,
+      "startedAt" : "2026-03-25T10:00:53.9078758Z",
+      "finishedAt" : "2026-03-25T10:00:53.9078758Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_46",
+      "b" : "o_42",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_47"
+  }, {
+    "track" : {
+      "id" : "op_24",
+      "numericId" : 24,
+      "startedAt" : "2026-03-25T10:00:53.9078758Z",
+      "finishedAt" : "2026-03-25T10:00:53.9078758Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_47",
+      "b" : "o_45",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_48"
+  }, {
+    "track" : {
+      "id" : "op_25",
+      "numericId" : 25,
+      "startedAt" : "2026-03-25T10:00:53.9088768Z",
+      "finishedAt" : "2026-03-25T10:00:53.9088768Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_7",
+      "b" : "i_7",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_52"
+  }, {
+    "track" : {
+      "id" : "op_26",
+      "numericId" : 26,
+      "startedAt" : "2026-03-25T10:00:53.9088768Z",
+      "finishedAt" : "2026-03-25T10:00:53.9088768Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_50",
+      "b" : "i_8",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_53"
+  }, {
+    "track" : {
+      "id" : "op_27",
+      "numericId" : 27,
+      "startedAt" : "2026-03-25T10:00:53.9088768Z",
+      "finishedAt" : "2026-03-25T10:00:53.9088768Z",
+      "descriptor" : {
+        "name" : "add",
+        "meta" : {
+          "formula" : "(a+b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_49",
+      "b" : "o_53",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_54"
+  }, {
+    "track" : {
+      "id" : "op_28",
+      "numericId" : 28,
+      "startedAt" : "2026-03-25T10:00:53.9088768Z",
+      "finishedAt" : "2026-03-25T10:00:53.9088768Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_51",
+      "b" : "o_52",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_55"
+  }, {
+    "track" : {
+      "id" : "op_29",
+      "numericId" : 29,
+      "startedAt" : "2026-03-25T10:00:53.9088768Z",
+      "finishedAt" : "2026-03-25T10:00:53.9088768Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_54",
+      "b" : "o_55",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_56"
+  }, {
+    "track" : {
+      "id" : "op_30",
+      "numericId" : 30,
+      "startedAt" : "2026-03-25T10:00:53.9088768Z",
+      "finishedAt" : "2026-03-25T10:00:53.9088768Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_9",
+      "b" : "o_56",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_57"
+  }, {
+    "track" : {
+      "id" : "op_31",
+      "numericId" : 31,
+      "startedAt" : "2026-03-25T10:00:53.9088768Z",
+      "finishedAt" : "2026-03-25T10:00:53.9088768Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_57",
+      "b" : "i_10",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_58"
+  }, {
+    "track" : {
+      "id" : "op_32",
+      "numericId" : 32,
+      "startedAt" : "2026-03-25T10:00:53.9088768Z",
+      "finishedAt" : "2026-03-25T10:00:53.9088768Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_60",
+      "b" : "o_15",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_62"
+  }, {
+    "track" : {
+      "id" : "op_33",
+      "numericId" : 33,
+      "startedAt" : "2026-03-25T10:00:53.9088768Z",
+      "finishedAt" : "2026-03-25T10:00:53.9088768Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_59",
+      "b" : "o_62",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_63"
+  }, {
+    "track" : {
+      "id" : "op_34",
+      "numericId" : 34,
+      "startedAt" : "2026-03-25T10:00:53.9088768Z",
+      "finishedAt" : "2026-03-25T10:00:53.9088768Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_63",
+      "b" : "o_58",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_64"
+  }, {
+    "track" : {
+      "id" : "op_35",
+      "numericId" : 35,
+      "startedAt" : "2026-03-25T10:00:53.9098782Z",
+      "finishedAt" : "2026-03-25T10:00:53.9098782Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_64",
+      "b" : "i_61",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_65"
+  }, {
+    "track" : {
+      "id" : "op_36",
+      "numericId" : 36,
+      "startedAt" : "2026-03-25T10:00:53.9098782Z",
+      "finishedAt" : "2026-03-25T10:00:53.9098782Z",
+      "descriptor" : {
+        "name" : "negate",
+        "meta" : {
+          "formula" : "(-a)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_65",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_66"
+  }, {
+    "track" : {
+      "id" : "op_37",
+      "numericId" : 37,
+      "startedAt" : "2026-03-25T10:00:53.9098782Z",
+      "finishedAt" : "2026-03-25T10:00:53.9098782Z",
+      "descriptor" : {
+        "name" : "add",
+        "meta" : {
+          "formula" : "(a+b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_48",
+      "b" : "o_66",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_67"
+  }, {
+    "track" : {
+      "id" : "op_38",
+      "numericId" : 38,
+      "startedAt" : "2026-03-25T10:00:53.9098782Z",
+      "finishedAt" : "2026-03-25T10:00:53.9098782Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_67",
+      "b" : "i_36",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_68"
+  }, {
+    "track" : {
+      "id" : "op_39",
+      "numericId" : 39,
+      "startedAt" : "2026-03-25T10:00:53.9098782Z",
+      "finishedAt" : "2026-03-25T10:00:53.9098782Z",
+      "descriptor" : {
+        "name" : "add",
+        "meta" : {
+          "formula" : "(a+b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_2",
+      "b" : "o_68",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_69"
+  }, {
+    "track" : {
+      "id" : "op_40",
+      "numericId" : 40,
+      "startedAt" : "2026-03-25T10:00:53.9098782Z",
+      "finishedAt" : "2026-03-25T10:00:53.9098782Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_6",
+      "b" : "o_69",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_70"
+  }, {
+    "track" : {
+      "id" : "op_41",
+      "numericId" : 41,
+      "startedAt" : "2026-03-25T10:00:53.9098782Z",
+      "finishedAt" : "2026-03-25T10:00:53.9098782Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_70",
+      "b" : "i_3",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_71"
+  }, {
+    "track" : {
+      "id" : "op_42",
+      "numericId" : 42,
+      "startedAt" : "2026-03-25T10:00:53.9098782Z",
+      "finishedAt" : "2026-03-25T10:00:53.9098782Z",
+      "descriptor" : {
+        "name" : "add",
+        "meta" : {
+          "formula" : "(a+b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_72",
+      "b" : "i_73",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_74"
+  }, {
+    "track" : {
+      "id" : "op_43",
+      "numericId" : 43,
+      "startedAt" : "2026-03-25T10:00:53.9098782Z",
+      "finishedAt" : "2026-03-25T10:00:53.9098782Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_74",
+      "b" : "o_71",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_75"
+  }, {
+    "track" : {
+      "id" : "op_44",
+      "numericId" : 44,
+      "startedAt" : "2026-03-25T10:00:53.9108781Z",
+      "finishedAt" : "2026-03-25T10:00:53.9108781Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_77",
+      "b" : "i_78",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_79"
+  }, {
+    "track" : {
+      "id" : "op_45",
+      "numericId" : 45,
+      "startedAt" : "2026-03-25T10:00:53.9108781Z",
+      "finishedAt" : "2026-03-25T10:00:53.9108781Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_76",
+      "b" : "o_79",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_80"
+  }, {
+    "track" : {
+      "id" : "op_46",
+      "numericId" : 46,
+      "startedAt" : "2026-03-25T10:00:53.9108781Z",
+      "finishedAt" : "2026-03-25T10:00:53.9108781Z",
+      "descriptor" : {
+        "name" : "add",
+        "meta" : {
+          "formula" : "(a+b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_2",
+      "b" : "o_80",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_81"
+  }, {
+    "track" : {
+      "id" : "op_47",
+      "numericId" : 47,
+      "startedAt" : "2026-03-25T10:00:53.9108781Z",
+      "finishedAt" : "2026-03-25T10:00:53.9108781Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_75",
+      "b" : "o_81",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_82"
+  }, {
+    "track" : {
+      "id" : "op_48",
+      "numericId" : 48,
+      "startedAt" : "2026-03-25T10:00:53.9108781Z",
+      "finishedAt" : "2026-03-25T10:00:53.9108781Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_82",
+      "b" : "i_83",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_84"
+  } ]
+}

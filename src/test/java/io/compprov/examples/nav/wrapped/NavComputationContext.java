@@ -1,20 +1,12 @@
 package io.compprov.examples.nav.wrapped;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import io.compprov.core.*;
+import io.compprov.core.ComputationEnvironment;
+import io.compprov.core.DataContext;
+import io.compprov.core.DefaultComputationContext;
+import io.compprov.core.DefaultComputationEnvironment;
 import io.compprov.core.meta.Descriptor;
-import io.compprov.core.meta.Meta;
-import io.compprov.core.operation.OperationTrack;
-import io.compprov.core.serde.*;
-import io.compprov.core.variable.VariableTrack;
 import io.compprov.examples.nav.model.Amount;
 import io.compprov.examples.nav.model.Rate;
-
-import java.math.MathContext;
-import java.time.Clock;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 public class NavComputationContext extends DefaultComputationContext {
 

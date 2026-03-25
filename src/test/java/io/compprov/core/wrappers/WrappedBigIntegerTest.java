@@ -19,12 +19,13 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class WrappedBigIntegerTest {
 
+    private static DefaultComputationEnvironment environment = new DefaultComputationEnvironment();
     private DefaultComputationContext ctx;
 
     @BeforeEach
     void setUp() {
         ctx = new DefaultComputationContext(
-                new DefaultComputationEnvironment(),
+                environment,
                 new DataContext(Descriptor.descriptor("test")));
     }
 
@@ -61,6 +62,12 @@ public class WrappedBigIntegerTest {
         assertValue(result, 7);
         assertOperationCount(1);
         assertVariableCount(3);
+
+        String json = environment.toJson(ctx.snapshot());
+
+        final var snapshot = environment.fromJson(json);
+        final var reproduced = environment.compute(snapshot);
+        assertEquals(result.getValue(), reproduced.getVariable("o_3").getValue());
     }
 
     @Test

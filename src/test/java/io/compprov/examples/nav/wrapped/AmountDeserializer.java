@@ -17,14 +17,14 @@ import java.math.MathContext;
 public class AmountDeserializer extends StdDeserializer<Amount> {
 
     public AmountDeserializer() {
-        super(MathContext.class);
+        super(Amount.class);
     }
 
     @Override
     public Amount deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
         Currency currency = Currency.valueOf(node.get("currency").asText());
-        BigDecimal amount = node.get("amount").decimalValue();
+        BigDecimal amount = new BigDecimal(node.get("amount").asText());
         return new Amount(currency, amount);
     }
 }

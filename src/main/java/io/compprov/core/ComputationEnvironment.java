@@ -9,6 +9,7 @@ import io.compprov.core.variable.ValueWithDescriptor;
 import io.compprov.core.variable.VariableTrack;
 import io.compprov.core.variable.VariableWrapper;
 
+import java.io.IOException;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.*;
@@ -71,6 +72,14 @@ public class ComputationEnvironment {
         try {
             return mapper.readValue(json, Snapshot.class);
         } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("Unable to deserialize JSON", e);
+        }
+    }
+
+    public Snapshot fromJson(byte[] json) {
+        try {
+            return mapper.readValue(json, Snapshot.class);
+        } catch (IOException e) {
             throw new IllegalArgumentException("Unable to deserialize JSON", e);
         }
     }
@@ -160,5 +169,12 @@ public class ComputationEnvironment {
 
     public ObjectMapper getMapper() {
         return mapper;
+    }
+
+    public ComputationContext compute(Snapshot snapshot) {
+        Objects.requireNonNull(this, "environment");
+        Objects.requireNonNull(snapshot, "snapshot");
+
+        return new ComputationContext(this, new DataContext(snapshot.descriptor()), snapshot);
     }
 }

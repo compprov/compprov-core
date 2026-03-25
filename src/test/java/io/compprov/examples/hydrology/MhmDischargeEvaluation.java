@@ -5,8 +5,11 @@ import io.compprov.core.DataContext;
 import io.compprov.core.DefaultComputationContext;
 import io.compprov.core.DefaultComputationEnvironment;
 import io.compprov.core.wrappers.WrappedBigDecimal;
+import io.compprov.examples.nav.NetAssetValueCalculator;
+import io.compprov.examples.nav.wrapped.NavComputationContext;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
@@ -186,9 +189,24 @@ public class MhmDischargeEvaluation {
 
         // Store the full CPG snapshot (provenance record) alongside the score.
         var snapshot = ctx.snapshot();
+        final var provenanceGraph = ctx.getEnvironment().toJson(snapshot);
+        //store(provenanceGraph)
 
         // Villamar et al. (2025) report P1 outperforms P2 with KGE values mostly
         // above 0.5.  With the synthetic P1 data (r=1, β=1, α=0.9), KGE = 0.9 exactly.
         assertEquals(0, kge.getValue().compareTo(new BigDecimal("0.9")));
+    }
+
+    @Test
+    public void reproduce() throws IOException {
+
+        final var model = NetAssetValueCalculator.class.getResourceAsStream("/snapshots/hydrology.json").readAllBytes();
+        final var snapshot = NavComputationContext.environment.fromJson(model);
+
+        //recover calculations
+        final var recalculated = NavComputationContext.environment.compute(snapshot);
+        final WrappedBigDecimal kge = (WrappedBigDecimal) recalculated.findSingleVariable("KGE: Kling-Gupta Efficiency");
+
+        assertEquals(0, new BigDecimal("0.9").compareTo(kge.getValue()));
     }
 }
