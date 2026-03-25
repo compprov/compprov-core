@@ -1,0 +1,1769 @@
+{
+  "descriptor" : {
+    "name" : "mHM discharge evaluation — Moselle at Perl, parameter set P1",
+    "meta" : { }
+  },
+  "variables" : [ {
+    "track" : {
+      "id" : "i_1",
+      "numericId" : 1,
+      "createdAt" : "2026-03-25T09:59:51.4448229Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "computation precision",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.MathContext"
+    },
+    "value" : {
+      "precision" : 34,
+      "roundingMode" : "HALF_EVEN"
+    }
+  }, {
+    "track" : {
+      "id" : "i_2",
+      "numericId" : 2,
+      "createdAt" : "2026-03-25T09:59:51.4478225Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "constant 1",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1
+  }, {
+    "track" : {
+      "id" : "i_3",
+      "numericId" : 3,
+      "createdAt" : "2026-03-25T09:59:51.4558229Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "q_obs[1]: observed discharge day 1, m3/s",
+        "meta" : {
+          "station" : "Moselle at Perl"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 100
+  }, {
+    "track" : {
+      "id" : "i_4",
+      "numericId" : 4,
+      "createdAt" : "2026-03-25T09:59:51.4558229Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "q_obs[2]: observed discharge day 2, m3/s",
+        "meta" : {
+          "station" : "Moselle at Perl"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 200
+  }, {
+    "track" : {
+      "id" : "i_5",
+      "numericId" : 5,
+      "createdAt" : "2026-03-25T09:59:51.4558229Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "q_obs[3]: observed discharge day 3, m3/s",
+        "meta" : {
+          "station" : "Moselle at Perl"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 300
+  }, {
+    "track" : {
+      "id" : "i_6",
+      "numericId" : 6,
+      "createdAt" : "2026-03-25T09:59:51.4558229Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "q_obs[4]: observed discharge day 4, m3/s",
+        "meta" : {
+          "station" : "Moselle at Perl"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 400
+  }, {
+    "track" : {
+      "id" : "i_7",
+      "numericId" : 7,
+      "createdAt" : "2026-03-25T09:59:51.4558229Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "q_obs[5]: observed discharge day 5, m3/s",
+        "meta" : {
+          "station" : "Moselle at Perl"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 500
+  }, {
+    "track" : {
+      "id" : "i_8",
+      "numericId" : 8,
+      "createdAt" : "2026-03-25T09:59:51.4558229Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "q_sim[1]: simulated discharge day 1, m3/s",
+        "meta" : {
+          "model" : "mHM",
+          "parameter_set" : "P1"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 120
+  }, {
+    "track" : {
+      "id" : "i_9",
+      "numericId" : 9,
+      "createdAt" : "2026-03-25T09:59:51.4558229Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "q_sim[2]: simulated discharge day 2, m3/s",
+        "meta" : {
+          "model" : "mHM",
+          "parameter_set" : "P1"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 210
+  }, {
+    "track" : {
+      "id" : "i_10",
+      "numericId" : 10,
+      "createdAt" : "2026-03-25T09:59:51.4558229Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "q_sim[3]: simulated discharge day 3, m3/s",
+        "meta" : {
+          "model" : "mHM",
+          "parameter_set" : "P1"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 300
+  }, {
+    "track" : {
+      "id" : "i_11",
+      "numericId" : 11,
+      "createdAt" : "2026-03-25T09:59:51.4558229Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "q_sim[4]: simulated discharge day 4, m3/s",
+        "meta" : {
+          "model" : "mHM",
+          "parameter_set" : "P1"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 390
+  }, {
+    "track" : {
+      "id" : "i_12",
+      "numericId" : 12,
+      "createdAt" : "2026-03-25T09:59:51.4558229Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "q_sim[5]: simulated discharge day 5, m3/s",
+        "meta" : {
+          "model" : "mHM",
+          "parameter_set" : "P1"
+        }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 480
+  }, {
+    "track" : {
+      "id" : "i_13",
+      "numericId" : 13,
+      "createdAt" : "2026-03-25T09:59:51.4558229Z",
+      "kind" : "INPUT",
+      "descriptor" : {
+        "name" : "n: number of observation days",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 5
+  }, {
+    "track" : {
+      "id" : "o_14",
+      "numericId" : 14,
+      "createdAt" : "2026-03-25T09:59:51.4578222Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "sum of observed discharge, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1500
+  }, {
+    "track" : {
+      "id" : "o_15",
+      "numericId" : 15,
+      "createdAt" : "2026-03-25T09:59:51.4588228Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "mu_obs: mean observed discharge, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 300
+  }, {
+    "track" : {
+      "id" : "o_16",
+      "numericId" : 16,
+      "createdAt" : "2026-03-25T09:59:51.4588228Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "sum of simulated discharge, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1500
+  }, {
+    "track" : {
+      "id" : "o_17",
+      "numericId" : 17,
+      "createdAt" : "2026-03-25T09:59:51.4598222Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "mu_sim: mean simulated discharge, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 300
+  }, {
+    "track" : {
+      "id" : "o_18",
+      "numericId" : 18,
+      "createdAt" : "2026-03-25T09:59:51.4598222Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devObs[1] = q_obs[1] - mu_obs, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : -200
+  }, {
+    "track" : {
+      "id" : "o_19",
+      "numericId" : 19,
+      "createdAt" : "2026-03-25T09:59:51.4598222Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devSim[1] = q_sim[1] - mu_sim, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : -180
+  }, {
+    "track" : {
+      "id" : "o_20",
+      "numericId" : 20,
+      "createdAt" : "2026-03-25T09:59:51.4598222Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devObs[2] = q_obs[2] - mu_obs, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : -100
+  }, {
+    "track" : {
+      "id" : "o_21",
+      "numericId" : 21,
+      "createdAt" : "2026-03-25T09:59:51.4598222Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devSim[2] = q_sim[2] - mu_sim, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : -90
+  }, {
+    "track" : {
+      "id" : "o_22",
+      "numericId" : 22,
+      "createdAt" : "2026-03-25T09:59:51.4598222Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devObs[3] = q_obs[3] - mu_obs, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0
+  }, {
+    "track" : {
+      "id" : "o_23",
+      "numericId" : 23,
+      "createdAt" : "2026-03-25T09:59:51.4598222Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devSim[3] = q_sim[3] - mu_sim, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0
+  }, {
+    "track" : {
+      "id" : "o_24",
+      "numericId" : 24,
+      "createdAt" : "2026-03-25T09:59:51.4598222Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devObs[4] = q_obs[4] - mu_obs, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 100
+  }, {
+    "track" : {
+      "id" : "o_25",
+      "numericId" : 25,
+      "createdAt" : "2026-03-25T09:59:51.4598222Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devSim[4] = q_sim[4] - mu_sim, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 90
+  }, {
+    "track" : {
+      "id" : "o_26",
+      "numericId" : 26,
+      "createdAt" : "2026-03-25T09:59:51.4598222Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devObs[5] = q_obs[5] - mu_obs, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 200
+  }, {
+    "track" : {
+      "id" : "o_27",
+      "numericId" : 27,
+      "createdAt" : "2026-03-25T09:59:51.4598222Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devSim[5] = q_sim[5] - mu_sim, m3/s",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 180
+  }, {
+    "track" : {
+      "id" : "o_28",
+      "numericId" : 28,
+      "createdAt" : "2026-03-25T09:59:51.4608229Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devObs[1]^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 40000
+  }, {
+    "track" : {
+      "id" : "o_29",
+      "numericId" : 29,
+      "createdAt" : "2026-03-25T09:59:51.4608229Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devSim[1]^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 32400
+  }, {
+    "track" : {
+      "id" : "o_30",
+      "numericId" : 30,
+      "createdAt" : "2026-03-25T09:59:51.4608229Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "cross[1] = devObs * devSim",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 36000
+  }, {
+    "track" : {
+      "id" : "o_31",
+      "numericId" : 31,
+      "createdAt" : "2026-03-25T09:59:51.4608229Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devObs[2]^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 10000
+  }, {
+    "track" : {
+      "id" : "o_32",
+      "numericId" : 32,
+      "createdAt" : "2026-03-25T09:59:51.4608229Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devSim[2]^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 8100
+  }, {
+    "track" : {
+      "id" : "o_33",
+      "numericId" : 33,
+      "createdAt" : "2026-03-25T09:59:51.4608229Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "cross[2] = devObs * devSim",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 9000
+  }, {
+    "track" : {
+      "id" : "o_34",
+      "numericId" : 34,
+      "createdAt" : "2026-03-25T09:59:51.4608229Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devObs[3]^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0
+  }, {
+    "track" : {
+      "id" : "o_35",
+      "numericId" : 35,
+      "createdAt" : "2026-03-25T09:59:51.4608229Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devSim[3]^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0
+  }, {
+    "track" : {
+      "id" : "o_36",
+      "numericId" : 36,
+      "createdAt" : "2026-03-25T09:59:51.4608229Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "cross[3] = devObs * devSim",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0
+  }, {
+    "track" : {
+      "id" : "o_37",
+      "numericId" : 37,
+      "createdAt" : "2026-03-25T09:59:51.4608229Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devObs[4]^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 10000
+  }, {
+    "track" : {
+      "id" : "o_38",
+      "numericId" : 38,
+      "createdAt" : "2026-03-25T09:59:51.4618228Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devSim[4]^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 8100
+  }, {
+    "track" : {
+      "id" : "o_39",
+      "numericId" : 39,
+      "createdAt" : "2026-03-25T09:59:51.4618228Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "cross[4] = devObs * devSim",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 9000
+  }, {
+    "track" : {
+      "id" : "o_40",
+      "numericId" : 40,
+      "createdAt" : "2026-03-25T09:59:51.4618228Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devObs[5]^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 40000
+  }, {
+    "track" : {
+      "id" : "o_41",
+      "numericId" : 41,
+      "createdAt" : "2026-03-25T09:59:51.4618228Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "devSim[5]^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 32400
+  }, {
+    "track" : {
+      "id" : "o_42",
+      "numericId" : 42,
+      "createdAt" : "2026-03-25T09:59:51.4618228Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "cross[5] = devObs * devSim",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 36000
+  }, {
+    "track" : {
+      "id" : "o_43",
+      "numericId" : 43,
+      "createdAt" : "2026-03-25T09:59:51.4618228Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "sum of squared observed deviations",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 100000
+  }, {
+    "track" : {
+      "id" : "o_44",
+      "numericId" : 44,
+      "createdAt" : "2026-03-25T09:59:51.4618228Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "sum of squared simulated deviations",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 81000
+  }, {
+    "track" : {
+      "id" : "o_45",
+      "numericId" : 45,
+      "createdAt" : "2026-03-25T09:59:51.4618228Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "sum of cross products devObs*devSim",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 90000
+  }, {
+    "track" : {
+      "id" : "o_46",
+      "numericId" : 46,
+      "createdAt" : "2026-03-25T09:59:51.4618228Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "sumSqObs * sumSqSim",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 8100000000
+  }, {
+    "track" : {
+      "id" : "o_47",
+      "numericId" : 47,
+      "createdAt" : "2026-03-25T09:59:51.4628218Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "sqrt(sumSqObs * sumSqSim)",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 90000
+  }, {
+    "track" : {
+      "id" : "o_48",
+      "numericId" : 48,
+      "createdAt" : "2026-03-25T09:59:51.4628218Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "r: Pearson linear correlation coefficient",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1
+  }, {
+    "track" : {
+      "id" : "o_49",
+      "numericId" : 49,
+      "createdAt" : "2026-03-25T09:59:51.4628218Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "sumSqSim / sumSqObs",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.81
+  }, {
+    "track" : {
+      "id" : "o_50",
+      "numericId" : 50,
+      "createdAt" : "2026-03-25T09:59:51.4628218Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "alpha: variability ratio sigma_sim / sigma_obs",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.9
+  }, {
+    "track" : {
+      "id" : "o_51",
+      "numericId" : 51,
+      "createdAt" : "2026-03-25T09:59:51.4628218Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "beta: bias ratio mu_sim / mu_obs",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 1
+  }, {
+    "track" : {
+      "id" : "o_52",
+      "numericId" : 52,
+      "createdAt" : "2026-03-25T09:59:51.4628218Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "r - 1",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0
+  }, {
+    "track" : {
+      "id" : "o_53",
+      "numericId" : 53,
+      "createdAt" : "2026-03-25T09:59:51.4628218Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "alpha - 1",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : -0.1
+  }, {
+    "track" : {
+      "id" : "o_54",
+      "numericId" : 54,
+      "createdAt" : "2026-03-25T09:59:51.4628218Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "beta - 1",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0
+  }, {
+    "track" : {
+      "id" : "o_55",
+      "numericId" : 55,
+      "createdAt" : "2026-03-25T09:59:51.4638224Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "(r-1)^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0
+  }, {
+    "track" : {
+      "id" : "o_56",
+      "numericId" : 56,
+      "createdAt" : "2026-03-25T09:59:51.4638224Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "(alpha-1)^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.01
+  }, {
+    "track" : {
+      "id" : "o_57",
+      "numericId" : 57,
+      "createdAt" : "2026-03-25T09:59:51.4638224Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "(beta-1)^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0
+  }, {
+    "track" : {
+      "id" : "o_58",
+      "numericId" : 58,
+      "createdAt" : "2026-03-25T09:59:51.4638224Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "ED^2 = (r-1)^2 + (alpha-1)^2 + (beta-1)^2",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.01
+  }, {
+    "track" : {
+      "id" : "o_59",
+      "numericId" : 59,
+      "createdAt" : "2026-03-25T09:59:51.4638224Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "ED: Euclidean distance in KGE space",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.1
+  }, {
+    "track" : {
+      "id" : "o_60",
+      "numericId" : 60,
+      "createdAt" : "2026-03-25T09:59:51.4638224Z",
+      "kind" : "OUTPUT",
+      "descriptor" : {
+        "name" : "KGE: Kling-Gupta Efficiency",
+        "meta" : { }
+      },
+      "valueClass" : "java.math.BigDecimal"
+    },
+    "value" : 0.9
+  } ],
+  "operations" : [ {
+    "track" : {
+      "id" : "op_1",
+      "numericId" : 1,
+      "startedAt" : "2026-03-25T09:59:51.4568228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4578222Z",
+      "descriptor" : {
+        "name" : "addBulk",
+        "meta" : {
+          "formula" : "(a+b0+...+bn)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_3",
+      "b0" : "i_4",
+      "b1" : "i_5",
+      "b2" : "i_6",
+      "b3" : "i_7",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_14"
+  }, {
+    "track" : {
+      "id" : "op_2",
+      "numericId" : 2,
+      "startedAt" : "2026-03-25T09:59:51.4588228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4588228Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_14",
+      "b" : "i_13",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_15"
+  }, {
+    "track" : {
+      "id" : "op_3",
+      "numericId" : 3,
+      "startedAt" : "2026-03-25T09:59:51.4588228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4588228Z",
+      "descriptor" : {
+        "name" : "addBulk",
+        "meta" : {
+          "formula" : "(a+b0+...+bn)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_8",
+      "b0" : "i_9",
+      "b1" : "i_10",
+      "b2" : "i_11",
+      "b3" : "i_12",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_16"
+  }, {
+    "track" : {
+      "id" : "op_4",
+      "numericId" : 4,
+      "startedAt" : "2026-03-25T09:59:51.4588228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4598222Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_16",
+      "b" : "i_13",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_17"
+  }, {
+    "track" : {
+      "id" : "op_5",
+      "numericId" : 5,
+      "startedAt" : "2026-03-25T09:59:51.4598222Z",
+      "finishedAt" : "2026-03-25T09:59:51.4598222Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_3",
+      "b" : "o_15",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_18"
+  }, {
+    "track" : {
+      "id" : "op_6",
+      "numericId" : 6,
+      "startedAt" : "2026-03-25T09:59:51.4598222Z",
+      "finishedAt" : "2026-03-25T09:59:51.4598222Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_8",
+      "b" : "o_17",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_19"
+  }, {
+    "track" : {
+      "id" : "op_7",
+      "numericId" : 7,
+      "startedAt" : "2026-03-25T09:59:51.4598222Z",
+      "finishedAt" : "2026-03-25T09:59:51.4598222Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_4",
+      "b" : "o_15",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_20"
+  }, {
+    "track" : {
+      "id" : "op_8",
+      "numericId" : 8,
+      "startedAt" : "2026-03-25T09:59:51.4598222Z",
+      "finishedAt" : "2026-03-25T09:59:51.4598222Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_9",
+      "b" : "o_17",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_21"
+  }, {
+    "track" : {
+      "id" : "op_9",
+      "numericId" : 9,
+      "startedAt" : "2026-03-25T09:59:51.4598222Z",
+      "finishedAt" : "2026-03-25T09:59:51.4598222Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_5",
+      "b" : "o_15",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_22"
+  }, {
+    "track" : {
+      "id" : "op_10",
+      "numericId" : 10,
+      "startedAt" : "2026-03-25T09:59:51.4598222Z",
+      "finishedAt" : "2026-03-25T09:59:51.4598222Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_10",
+      "b" : "o_17",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_23"
+  }, {
+    "track" : {
+      "id" : "op_11",
+      "numericId" : 11,
+      "startedAt" : "2026-03-25T09:59:51.4598222Z",
+      "finishedAt" : "2026-03-25T09:59:51.4598222Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_6",
+      "b" : "o_15",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_24"
+  }, {
+    "track" : {
+      "id" : "op_12",
+      "numericId" : 12,
+      "startedAt" : "2026-03-25T09:59:51.4598222Z",
+      "finishedAt" : "2026-03-25T09:59:51.4598222Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_11",
+      "b" : "o_17",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_25"
+  }, {
+    "track" : {
+      "id" : "op_13",
+      "numericId" : 13,
+      "startedAt" : "2026-03-25T09:59:51.4598222Z",
+      "finishedAt" : "2026-03-25T09:59:51.4598222Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_7",
+      "b" : "o_15",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_26"
+  }, {
+    "track" : {
+      "id" : "op_14",
+      "numericId" : 14,
+      "startedAt" : "2026-03-25T09:59:51.4598222Z",
+      "finishedAt" : "2026-03-25T09:59:51.4598222Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_12",
+      "b" : "o_17",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_27"
+  }, {
+    "track" : {
+      "id" : "op_15",
+      "numericId" : 15,
+      "startedAt" : "2026-03-25T09:59:51.4608229Z",
+      "finishedAt" : "2026-03-25T09:59:51.4608229Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_18",
+      "b" : "o_18",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_28"
+  }, {
+    "track" : {
+      "id" : "op_16",
+      "numericId" : 16,
+      "startedAt" : "2026-03-25T09:59:51.4608229Z",
+      "finishedAt" : "2026-03-25T09:59:51.4608229Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_19",
+      "b" : "o_19",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_29"
+  }, {
+    "track" : {
+      "id" : "op_17",
+      "numericId" : 17,
+      "startedAt" : "2026-03-25T09:59:51.4608229Z",
+      "finishedAt" : "2026-03-25T09:59:51.4608229Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_18",
+      "b" : "o_19",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_30"
+  }, {
+    "track" : {
+      "id" : "op_18",
+      "numericId" : 18,
+      "startedAt" : "2026-03-25T09:59:51.4608229Z",
+      "finishedAt" : "2026-03-25T09:59:51.4608229Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_20",
+      "b" : "o_20",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_31"
+  }, {
+    "track" : {
+      "id" : "op_19",
+      "numericId" : 19,
+      "startedAt" : "2026-03-25T09:59:51.4608229Z",
+      "finishedAt" : "2026-03-25T09:59:51.4608229Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_21",
+      "b" : "o_21",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_32"
+  }, {
+    "track" : {
+      "id" : "op_20",
+      "numericId" : 20,
+      "startedAt" : "2026-03-25T09:59:51.4608229Z",
+      "finishedAt" : "2026-03-25T09:59:51.4608229Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_20",
+      "b" : "o_21",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_33"
+  }, {
+    "track" : {
+      "id" : "op_21",
+      "numericId" : 21,
+      "startedAt" : "2026-03-25T09:59:51.4608229Z",
+      "finishedAt" : "2026-03-25T09:59:51.4608229Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_22",
+      "b" : "o_22",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_34"
+  }, {
+    "track" : {
+      "id" : "op_22",
+      "numericId" : 22,
+      "startedAt" : "2026-03-25T09:59:51.4608229Z",
+      "finishedAt" : "2026-03-25T09:59:51.4608229Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_23",
+      "b" : "o_23",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_35"
+  }, {
+    "track" : {
+      "id" : "op_23",
+      "numericId" : 23,
+      "startedAt" : "2026-03-25T09:59:51.4608229Z",
+      "finishedAt" : "2026-03-25T09:59:51.4608229Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_22",
+      "b" : "o_23",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_36"
+  }, {
+    "track" : {
+      "id" : "op_24",
+      "numericId" : 24,
+      "startedAt" : "2026-03-25T09:59:51.4608229Z",
+      "finishedAt" : "2026-03-25T09:59:51.4608229Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_24",
+      "b" : "o_24",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_37"
+  }, {
+    "track" : {
+      "id" : "op_25",
+      "numericId" : 25,
+      "startedAt" : "2026-03-25T09:59:51.4618228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4618228Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_25",
+      "b" : "o_25",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_38"
+  }, {
+    "track" : {
+      "id" : "op_26",
+      "numericId" : 26,
+      "startedAt" : "2026-03-25T09:59:51.4618228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4618228Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_24",
+      "b" : "o_25",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_39"
+  }, {
+    "track" : {
+      "id" : "op_27",
+      "numericId" : 27,
+      "startedAt" : "2026-03-25T09:59:51.4618228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4618228Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_26",
+      "b" : "o_26",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_40"
+  }, {
+    "track" : {
+      "id" : "op_28",
+      "numericId" : 28,
+      "startedAt" : "2026-03-25T09:59:51.4618228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4618228Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_27",
+      "b" : "o_27",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_41"
+  }, {
+    "track" : {
+      "id" : "op_29",
+      "numericId" : 29,
+      "startedAt" : "2026-03-25T09:59:51.4618228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4618228Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_26",
+      "b" : "o_27",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_42"
+  }, {
+    "track" : {
+      "id" : "op_30",
+      "numericId" : 30,
+      "startedAt" : "2026-03-25T09:59:51.4618228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4618228Z",
+      "descriptor" : {
+        "name" : "addBulk",
+        "meta" : {
+          "formula" : "(a+b0+...+bn)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_28",
+      "b0" : "o_31",
+      "b1" : "o_34",
+      "b2" : "o_37",
+      "b3" : "o_40",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_43"
+  }, {
+    "track" : {
+      "id" : "op_31",
+      "numericId" : 31,
+      "startedAt" : "2026-03-25T09:59:51.4618228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4618228Z",
+      "descriptor" : {
+        "name" : "addBulk",
+        "meta" : {
+          "formula" : "(a+b0+...+bn)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_29",
+      "b0" : "o_32",
+      "b1" : "o_35",
+      "b2" : "o_38",
+      "b3" : "o_41",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_44"
+  }, {
+    "track" : {
+      "id" : "op_32",
+      "numericId" : 32,
+      "startedAt" : "2026-03-25T09:59:51.4618228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4618228Z",
+      "descriptor" : {
+        "name" : "addBulk",
+        "meta" : {
+          "formula" : "(a+b0+...+bn)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_30",
+      "b0" : "o_33",
+      "b1" : "o_36",
+      "b2" : "o_39",
+      "b3" : "o_42",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_45"
+  }, {
+    "track" : {
+      "id" : "op_33",
+      "numericId" : 33,
+      "startedAt" : "2026-03-25T09:59:51.4618228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4618228Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_43",
+      "b" : "o_44",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_46"
+  }, {
+    "track" : {
+      "id" : "op_34",
+      "numericId" : 34,
+      "startedAt" : "2026-03-25T09:59:51.4618228Z",
+      "finishedAt" : "2026-03-25T09:59:51.4628218Z",
+      "descriptor" : {
+        "name" : "sqrt",
+        "meta" : {
+          "formula" : "sqrt(a)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_46",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_47"
+  }, {
+    "track" : {
+      "id" : "op_35",
+      "numericId" : 35,
+      "startedAt" : "2026-03-25T09:59:51.4628218Z",
+      "finishedAt" : "2026-03-25T09:59:51.4628218Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_45",
+      "b" : "o_47",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_48"
+  }, {
+    "track" : {
+      "id" : "op_36",
+      "numericId" : 36,
+      "startedAt" : "2026-03-25T09:59:51.4628218Z",
+      "finishedAt" : "2026-03-25T09:59:51.4628218Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_44",
+      "b" : "o_43",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_49"
+  }, {
+    "track" : {
+      "id" : "op_37",
+      "numericId" : 37,
+      "startedAt" : "2026-03-25T09:59:51.4628218Z",
+      "finishedAt" : "2026-03-25T09:59:51.4628218Z",
+      "descriptor" : {
+        "name" : "sqrt",
+        "meta" : {
+          "formula" : "sqrt(a)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_49",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_50"
+  }, {
+    "track" : {
+      "id" : "op_38",
+      "numericId" : 38,
+      "startedAt" : "2026-03-25T09:59:51.4628218Z",
+      "finishedAt" : "2026-03-25T09:59:51.4628218Z",
+      "descriptor" : {
+        "name" : "divide",
+        "meta" : {
+          "formula" : "(a/b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_17",
+      "b" : "o_15",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_51"
+  }, {
+    "track" : {
+      "id" : "op_39",
+      "numericId" : 39,
+      "startedAt" : "2026-03-25T09:59:51.4628218Z",
+      "finishedAt" : "2026-03-25T09:59:51.4628218Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_48",
+      "b" : "i_2",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_52"
+  }, {
+    "track" : {
+      "id" : "op_40",
+      "numericId" : 40,
+      "startedAt" : "2026-03-25T09:59:51.4628218Z",
+      "finishedAt" : "2026-03-25T09:59:51.4628218Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_50",
+      "b" : "i_2",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_53"
+  }, {
+    "track" : {
+      "id" : "op_41",
+      "numericId" : 41,
+      "startedAt" : "2026-03-25T09:59:51.4628218Z",
+      "finishedAt" : "2026-03-25T09:59:51.4628218Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_51",
+      "b" : "i_2",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_54"
+  }, {
+    "track" : {
+      "id" : "op_42",
+      "numericId" : 42,
+      "startedAt" : "2026-03-25T09:59:51.4628218Z",
+      "finishedAt" : "2026-03-25T09:59:51.4638224Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_52",
+      "b" : "o_52",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_55"
+  }, {
+    "track" : {
+      "id" : "op_43",
+      "numericId" : 43,
+      "startedAt" : "2026-03-25T09:59:51.4638224Z",
+      "finishedAt" : "2026-03-25T09:59:51.4638224Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_53",
+      "b" : "o_53",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_56"
+  }, {
+    "track" : {
+      "id" : "op_44",
+      "numericId" : 44,
+      "startedAt" : "2026-03-25T09:59:51.4638224Z",
+      "finishedAt" : "2026-03-25T09:59:51.4638224Z",
+      "descriptor" : {
+        "name" : "multiply",
+        "meta" : {
+          "formula" : "(a*b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_54",
+      "b" : "o_54",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_57"
+  }, {
+    "track" : {
+      "id" : "op_45",
+      "numericId" : 45,
+      "startedAt" : "2026-03-25T09:59:51.4638224Z",
+      "finishedAt" : "2026-03-25T09:59:51.4638224Z",
+      "descriptor" : {
+        "name" : "addBulk",
+        "meta" : {
+          "formula" : "(a+b0+...+bn)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_55",
+      "b0" : "o_56",
+      "b1" : "o_57",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_58"
+  }, {
+    "track" : {
+      "id" : "op_46",
+      "numericId" : 46,
+      "startedAt" : "2026-03-25T09:59:51.4638224Z",
+      "finishedAt" : "2026-03-25T09:59:51.4638224Z",
+      "descriptor" : {
+        "name" : "sqrt",
+        "meta" : {
+          "formula" : "sqrt(a)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "o_58",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_59"
+  }, {
+    "track" : {
+      "id" : "op_47",
+      "numericId" : 47,
+      "startedAt" : "2026-03-25T09:59:51.4638224Z",
+      "finishedAt" : "2026-03-25T09:59:51.4638224Z",
+      "descriptor" : {
+        "name" : "subtract",
+        "meta" : {
+          "formula" : "(a-b)mc"
+        }
+      },
+      "wrapperClass" : "io.compprov.core.wrappers.WrappedBigDecimal"
+    },
+    "arguments" : {
+      "a" : "i_2",
+      "b" : "o_59",
+      "mc" : "i_1"
+    },
+    "resultId" : "o_60"
+  } ]
+}

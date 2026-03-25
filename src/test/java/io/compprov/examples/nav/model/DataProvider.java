@@ -20,7 +20,7 @@ public class DataProvider {
     }
 
     public Amount fetchBinanceEthAmount() {
-        return new Amount(Currency.ETH, new BigDecimal("2.13"));
+        return new Amount(Currency.ETH, new BigDecimal("23.34"));
     }
 
     public Amount fetchBinanceUsdcAmount() {

@@ -13,7 +13,7 @@ public class Amount {
 
     public Amount(Currency currency, BigDecimal amount) {
         this.currency = requireNonNull(currency);
-        this.amount = requireNonNull(amount);
+        this.amount = requireNonNull(amount).setScale(currency.getDecimals(), RoundingMode.DOWN);
     }
 
     public Amount add(Amount amount) {
@@ -26,9 +26,9 @@ public class Amount {
 
     public Amount convert(Rate rate) {
         if (currency == rate.from()) {
-            return new Amount(rate.to(), amount.multiply(rate.rate(), new MathContext(rate.to().getDecimals(), RoundingMode.DOWN)));
+            return new Amount(rate.to(), amount.multiply(rate.rate()).setScale(rate.to().getDecimals(), RoundingMode.DOWN));
         } else if (currency == rate.to()) {
-            return new Amount(rate.from(), amount.divide(rate.rate(), new MathContext(rate.from().getDecimals(), RoundingMode.DOWN)));
+            return new Amount(rate.from(), amount.divide(rate.rate(), rate.from().getDecimals(), RoundingMode.DOWN));
         }
         throw new IllegalArgumentException("Invalid rate currency");
     }

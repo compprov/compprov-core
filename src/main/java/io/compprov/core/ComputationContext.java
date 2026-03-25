@@ -9,7 +9,9 @@ import io.compprov.core.variable.VariableWrapper;
 import io.compprov.core.variable.WrappedVariable;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import static io.compprov.core.operation.WrappedOperation.operation;
 
@@ -26,6 +28,12 @@ public class ComputationContext {
         Objects.requireNonNull(data, "data");
         this.environment = environment;
         this.data = data;
+    }
+
+    public ComputationContext(ComputationEnvironment environment, DataContext data, Snapshot snapshot) {
+        this(environment, data);
+        snapshot.variables().forEach(this::wrapSnapshotVariable);
+        snapshot.operations().forEach(this::executeSnapshotOperation);
     }
 
     /**
@@ -83,18 +91,6 @@ public class ComputationContext {
         data.operations.put(wrappedOperation.getOperationTrack().getId(), wrappedOperation);
 
         return wrappedResult;
-    }
-
-    public static ComputationContext compute(ComputationEnvironment environment,
-                                             Snapshot snapshot) {
-        Objects.requireNonNull(environment, "environment");
-        Objects.requireNonNull(snapshot, "snapshot");
-
-        ComputationContext result = new ComputationContext(environment, new DataContext(snapshot.descriptor()));
-        snapshot.variables().forEach(result::wrapSnapshotVariable);
-        snapshot.operations().forEach(result::executeSnapshotOperation);
-
-        return result;
     }
 
     private <T> WrappedVariable wrap(T value, Descriptor descriptor, VariableKind variableKind) {
@@ -185,6 +181,34 @@ public class ComputationContext {
 
     public WrappedVariable getVariable(String id) {
         return data.variables.get(id);
+    }
+
+    public List<WrappedVariable> findVariables(Predicate<WrappedVariable> predicate) {
+        return data.variables.values().stream().filter(predicate).toList();
+    }
+
+    /**
+     * @param predicate
+     * @return null if not found
+     * @throws IllegalStateException if more than one result is found
+     */
+    public WrappedVariable findSingleVariable(Predicate<WrappedVariable> predicate) {
+        final var results = findVariables(predicate);
+        if (results.isEmpty()) {
+            return null;
+        }
+        if (results.size() > 1) {
+            throw new IllegalStateException("Expected a single result, but found " + results.size());
+        }
+        return results.get(0);
+    }
+
+    public WrappedVariable findSingleVariable(String name) {
+        return findSingleVariable(it -> it.getVariableTrack().getDescriptor().getName().equals(name));
+    }
+
+    public List<WrappedVariable> findVariables(String name) {
+        return findVariables(it -> it.getVariableTrack().getDescriptor().getName().equals(name));
     }
 
     public WrappedOperation getOperation(String id) {

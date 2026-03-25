@@ -1,15 +1,19 @@
 package io.compprov.examples.nav;
 
-import io.compprov.core.DefaultComputationContext;
 import io.compprov.core.meta.Meta;
+import io.compprov.core.variable.ValueWithDescriptor;
 import io.compprov.examples.nav.model.Amount;
 import io.compprov.examples.nav.model.Currency;
 import io.compprov.examples.nav.model.DataProvider;
+import io.compprov.examples.nav.model.Rate;
 import io.compprov.examples.nav.wrapped.NavComputationContext;
+import io.compprov.examples.nav.wrapped.WrappedAmount;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import static io.compprov.core.meta.Descriptor.descriptor;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -66,12 +70,40 @@ public class NetAssetValueCalculator {
         //store(provenanceGraph)
 
         final var result = nav.getValue();
-        assertEquals(result, new Amount(Currency.USD, new BigDecimal("377460")));
+        assertEquals(new Amount(Currency.USD, new BigDecimal("432287.39")), result);
+    }
 
-        //recover your calculations
-        final var recalculated = NavComputationContext.compute(
-                NavComputationContext.environment,
-                NavComputationContext.environment.fromJson(provenanceGraph));
-        assertEquals(recalculated.getVariable(nav.getVariableTrack().getId()).getValue(), result);
+    @Test
+    public void reproduce() throws IOException {
+
+        final var model = NetAssetValueCalculator.class.getResourceAsStream("/snapshots/nav.json").readAllBytes();
+        final var snapshot = NavComputationContext.environment.fromJson(model);
+
+        //recover calculations
+        final var recalculated = NavComputationContext.environment.compute(snapshot);
+        final var result = recalculated.findSingleVariable("Assets sum").getValue();
+
+        assertEquals(new Amount(Currency.USD, new BigDecimal("432287.39")), result);
+    }
+
+    @Test
+    public void simulate() throws IOException {
+
+        final var model = NetAssetValueCalculator.class.getResourceAsStream("/snapshots/nav.json").readAllBytes();
+        final var snapshot = NavComputationContext.environment.fromJson(model);
+        final var recalculated = NavComputationContext.environment.compute(snapshot);
+
+        final var btcPriceId = recalculated.findSingleVariable("BTC/USD rate").getVariableTrack().getId();
+        final var btcGrowSimulation = NavComputationContext.environment.copyWith(
+                snapshot,
+                descriptor("Nav with increased BTC price: 92695.63"),
+                Map.of(btcPriceId, new ValueWithDescriptor(
+                        descriptor("BTC/USD rate", Meta.of("origin", "Simulation")),
+                        new Rate(Currency.BTC, Currency.USD, new BigDecimal("92685.63")))));
+
+        //simulate
+        final var simulation = NavComputationContext.environment.compute(btcGrowSimulation);
+        final WrappedAmount simulatedNav = (WrappedAmount) simulation.findSingleVariable("Assets sum");
+        assertEquals(new Amount(Currency.USD, new BigDecimal("482759.68")), simulatedNav.getValue());
     }
 }

@@ -4,11 +4,13 @@ import io.compprov.core.ComputationEnvironment;
 import io.compprov.core.DataContext;
 import io.compprov.core.DefaultComputationContext;
 import io.compprov.core.DefaultComputationEnvironment;
+import io.compprov.examples.nav.NetAssetValueCalculator;
+import io.compprov.examples.nav.wrapped.NavComputationContext;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 
 import static io.compprov.core.meta.Descriptor.descriptor;
 import static io.compprov.core.meta.Meta.of;
@@ -73,9 +75,9 @@ public class GaugeBlockCalibration {
         var data = new GaugeBlockDataProvider();
 
         // ── Shared constants ──────────────────────────────────────────────────────
-        var mc  = ctx.wrapMathContext(MathContext.DECIMAL128, descriptor("computation precision"));
-        var one = ctx.wrapBigDecimal(BigDecimal.ONE,       descriptor("constant 1"));
-        var two = ctx.wrapBigDecimal(new BigDecimal("2"),  descriptor("constant 2"));
+        var mc = ctx.wrapMathContext(MathContext.DECIMAL128, descriptor("computation precision"));
+        var one = ctx.wrapBigDecimal(BigDecimal.ONE, descriptor("constant 1"));
+        var two = ctx.wrapBigDecimal(new BigDecimal("2"), descriptor("constant 2"));
 
         // ── Measurement standards: calibrated vacuum wavelengths ──────────────────
         // All three wavelengths feed the method of exact fractions.
@@ -124,81 +126,81 @@ public class GaugeBlockCalibration {
         // ── Step 2: standard refractivity N_s (Sellmeier dispersion formula) ─────
         // Dry air at standard conditions: T=15°C, P=101325 Pa, xCO2=450 ppm.
         // N_s = 8342.54 + 2406147/(130 - sigma^2) + 15998/(38.9 - sigma^2)  [×10^-8]
-        var cK0    = ctx.wrapBigDecimal(new BigDecimal("8342.54"),  descriptor("Sellmeier k0 [×10^-8]"));
-        var cK1    = ctx.wrapBigDecimal(new BigDecimal("2406147"),  descriptor("Sellmeier k1 numerator"));
-        var cK2    = ctx.wrapBigDecimal(new BigDecimal("15998"),    descriptor("Sellmeier k2 numerator"));
-        var cUvRes = ctx.wrapBigDecimal(new BigDecimal("130"),      descriptor("Sellmeier UV resonance, um^-2"));
-        var cIrRes = ctx.wrapBigDecimal(new BigDecimal("38.9"),     descriptor("Sellmeier IR resonance, um^-2"));
+        var cK0 = ctx.wrapBigDecimal(new BigDecimal("8342.54"), descriptor("Sellmeier k0 [×10^-8]"));
+        var cK1 = ctx.wrapBigDecimal(new BigDecimal("2406147"), descriptor("Sellmeier k1 numerator"));
+        var cK2 = ctx.wrapBigDecimal(new BigDecimal("15998"), descriptor("Sellmeier k2 numerator"));
+        var cUvRes = ctx.wrapBigDecimal(new BigDecimal("130"), descriptor("Sellmeier UV resonance, um^-2"));
+        var cIrRes = ctx.wrapBigDecimal(new BigDecimal("38.9"), descriptor("Sellmeier IR resonance, um^-2"));
 
         var denomUv = cUvRes.subtract(sigmaSq, mc, descriptor("130 - sigma^2"));
         var denomIr = cIrRes.subtract(sigmaSq, mc, descriptor("38.9 - sigma^2"));
-        var termUv  = cK1.divide(denomUv, mc, descriptor("2406147 / (130 - sigma^2)"));
-        var termIr  = cK2.divide(denomIr, mc, descriptor("15998 / (38.9 - sigma^2)"));
-        var Ns      = cK0.add(termUv, mc, descriptor("Ns partial"))
-                         .add(termIr, mc, descriptor("N_s: standard refractivity [×10^-8]"));
+        var termUv = cK1.divide(denomUv, mc, descriptor("2406147 / (130 - sigma^2)"));
+        var termIr = cK2.divide(denomIr, mc, descriptor("15998 / (38.9 - sigma^2)"));
+        var Ns = cK0.add(termUv, mc, descriptor("Ns partial"))
+                .add(termIr, mc, descriptor("N_s: standard refractivity [×10^-8]"));
 
         // ── Step 3: CO₂ correction ────────────────────────────────────────────────
         // Standard reference is 450 ppm; factor = 1 + 0.534e-6 × (xCO2 - 450)
-        var cCO2Ref   = ctx.wrapBigDecimal(new BigDecimal("450"),          descriptor("CO2 reference concentration, ppm"));
-        var cCO2Coeff = ctx.wrapBigDecimal(new BigDecimal("0.000000534"),  descriptor("CO2 correction coefficient"));
-        var deltaCO2  = co2ppm.subtract(cCO2Ref, mc, descriptor("xCO2 - 450"));
+        var cCO2Ref = ctx.wrapBigDecimal(new BigDecimal("450"), descriptor("CO2 reference concentration, ppm"));
+        var cCO2Coeff = ctx.wrapBigDecimal(new BigDecimal("0.000000534"), descriptor("CO2 correction coefficient"));
+        var deltaCO2 = co2ppm.subtract(cCO2Ref, mc, descriptor("xCO2 - 450"));
         var co2Factor = one.add(cCO2Coeff.multiply(deltaCO2, mc, descriptor("CO2 correction term")),
-                                mc, descriptor("CO2 correction factor"));
+                mc, descriptor("CO2 correction factor"));
         var NsCO2 = Ns.multiply(co2Factor, mc, descriptor("N_s corrected for CO2 [×10^-8]"));
 
         // ── Step 4: temperature and pressure correction (Birch & Downs 1993) ─────
         // N_tp = N_s_co2 × P × (1 + P·1e-8·(0.601 - 0.00972·T)) / (96095.43 × (1 + 0.003661·T))
-        var cBdDenom = ctx.wrapBigDecimal(new BigDecimal("96095.43"),  descriptor("B&D denominator constant"));
-        var cBdA     = ctx.wrapBigDecimal(new BigDecimal("0.601"),     descriptor("B&D pressure coefficient a"));
-        var cBdB     = ctx.wrapBigDecimal(new BigDecimal("0.00972"),   descriptor("B&D pressure coefficient b"));
-        var c1e8     = ctx.wrapBigDecimal(new BigDecimal("1E-8"),      descriptor("scale factor 1e-8"));
-        var cBdTherm = ctx.wrapBigDecimal(new BigDecimal("0.003661"),  descriptor("B&D thermal coefficient"));
+        var cBdDenom = ctx.wrapBigDecimal(new BigDecimal("96095.43"), descriptor("B&D denominator constant"));
+        var cBdA = ctx.wrapBigDecimal(new BigDecimal("0.601"), descriptor("B&D pressure coefficient a"));
+        var cBdB = ctx.wrapBigDecimal(new BigDecimal("0.00972"), descriptor("B&D pressure coefficient b"));
+        var c1e8 = ctx.wrapBigDecimal(new BigDecimal("1E-8"), descriptor("scale factor 1e-8"));
+        var cBdTherm = ctx.wrapBigDecimal(new BigDecimal("0.003661"), descriptor("B&D thermal coefficient"));
 
-        var bdTempTerm  = cBdA.subtract(cBdB.multiply(airTemp, mc, descriptor("b*T")),
-                                        mc, descriptor("a - b*T_air"));
+        var bdTempTerm = cBdA.subtract(cBdB.multiply(airTemp, mc, descriptor("b*T")),
+                mc, descriptor("a - b*T_air"));
         var bdPressCorr = one.add(
                 airPressure.multiply(c1e8, mc, descriptor("P*1e-8"))
-                           .multiply(bdTempTerm, mc, descriptor("P*1e-8*(a - b*T_air)")),
+                        .multiply(bdTempTerm, mc, descriptor("P*1e-8*(a - b*T_air)")),
                 mc, descriptor("pressure correction factor (1 + P*1e-8*(a-b*T))"));
         var bdThermCorr = one.add(cBdTherm.multiply(airTemp, mc, descriptor("0.003661*T_air")),
-                                  mc, descriptor("thermal denominator factor (1 + 0.003661*T)"));
-        var bdDenomTP   = cBdDenom.multiply(bdThermCorr, mc,
+                mc, descriptor("thermal denominator factor (1 + 0.003661*T)"));
+        var bdDenomTP = cBdDenom.multiply(bdThermCorr, mc,
                 descriptor("B&D full denominator (96095.43*(1+0.003661*T))"));
         var Ntp = NsCO2.multiply(airPressure, mc, descriptor("N_s_co2 * P"))
-                       .multiply(bdPressCorr,  mc, descriptor("N_s_co2 * P * pressCorr"))
-                       .divide(bdDenomTP,      mc, descriptor("N_tp: dry air refractivity [×10^-8]"));
+                .multiply(bdPressCorr, mc, descriptor("N_s_co2 * P * pressCorr"))
+                .divide(bdDenomTP, mc, descriptor("N_tp: dry air refractivity [×10^-8]"));
 
         // ── Step 5: water vapor enhancement factor ────────────────────────────────
         // f_enh = 1.00070 + 3.7e-8 * P - 1.24e-7 * T²
-        var cFenhAlpha = ctx.wrapBigDecimal(new BigDecimal("1.00070"),  descriptor("water vapor enhancement alpha"));
-        var cFenhBeta  = ctx.wrapBigDecimal(new BigDecimal("3.7E-8"),   descriptor("water vapor enhancement beta"));
-        var cFenhGamma = ctx.wrapBigDecimal(new BigDecimal("1.24E-7"),  descriptor("water vapor enhancement gamma"));
-        var airTempSq  = airTemp.multiply(airTemp, mc, descriptor("T_air^2"));
+        var cFenhAlpha = ctx.wrapBigDecimal(new BigDecimal("1.00070"), descriptor("water vapor enhancement alpha"));
+        var cFenhBeta = ctx.wrapBigDecimal(new BigDecimal("3.7E-8"), descriptor("water vapor enhancement beta"));
+        var cFenhGamma = ctx.wrapBigDecimal(new BigDecimal("1.24E-7"), descriptor("water vapor enhancement gamma"));
+        var airTempSq = airTemp.multiply(airTemp, mc, descriptor("T_air^2"));
         var fEnh = cFenhAlpha
                 .add(cFenhBeta.multiply(airPressure, mc, descriptor("beta*P_air")),
-                     mc, descriptor("alpha + beta*P"))
+                        mc, descriptor("alpha + beta*P"))
                 .subtract(cFenhGamma.multiply(airTempSq, mc, descriptor("gamma*T_air^2")),
-                          mc, descriptor("f_enh: water vapor enhancement factor"));
+                        mc, descriptor("f_enh: water vapor enhancement factor"));
 
         // ── Step 6: partial pressure of water vapor ───────────────────────────────
         var pv = humidity.multiply(fEnh, mc, descriptor("h * f_enh"))
-                         .multiply(svp,  mc, descriptor("pv: partial pressure of water vapor, Pa"));
+                .multiply(svp, mc, descriptor("pv: partial pressure of water vapor, Pa"));
 
         // ── Step 7: water vapor correction to refractivity ────────────────────────
         // N_v = -(3.8020 - 0.0384 * sigma^2) * pv * 1e-3   [×10^-8]
         var cEdlenW1 = ctx.wrapBigDecimal(new BigDecimal("3.8020"), descriptor("Edlen water vapor coefficient W1"));
         var cEdlenW2 = ctx.wrapBigDecimal(new BigDecimal("0.0384"), descriptor("Edlen water vapor coefficient W2"));
-        var c1e3     = ctx.wrapBigDecimal(new BigDecimal("1E-3"),    descriptor("scale factor 1e-3"));
-        var wvTerm   = cEdlenW1.subtract(cEdlenW2.multiply(sigmaSq, mc, descriptor("W2*sigma^2")),
-                                         mc, descriptor("W1 - W2*sigma^2"));
+        var c1e3 = ctx.wrapBigDecimal(new BigDecimal("1E-3"), descriptor("scale factor 1e-3"));
+        var wvTerm = cEdlenW1.subtract(cEdlenW2.multiply(sigmaSq, mc, descriptor("W2*sigma^2")),
+                mc, descriptor("W1 - W2*sigma^2"));
         // Water vapor reduces n relative to dry air, so the correction is negative.
-        var Nv = wvTerm.multiply(pv,   mc, descriptor("(W1-W2*sigma^2)*pv"))
-                       .multiply(c1e3, mc, descriptor("water vapor refractivity magnitude [×10^-8]"))
-                       .negate(mc, descriptor("N_v: water vapor refractivity correction [×10^-8]"));
+        var Nv = wvTerm.multiply(pv, mc, descriptor("(W1-W2*sigma^2)*pv"))
+                .multiply(c1e3, mc, descriptor("water vapor refractivity magnitude [×10^-8]"))
+                .negate(mc, descriptor("N_v: water vapor refractivity correction [×10^-8]"));
 
         // ── Step 8: total refractivity → refractive index ─────────────────────────
         // n = 1 + (N_tp + N_v) × 1e-8
-        var Ntotal   = Ntp.add(Nv, mc, descriptor("N_total = N_tp + N_v [×10^-8]"));
+        var Ntotal = Ntp.add(Nv, mc, descriptor("N_total = N_tp + N_v [×10^-8]"));
         var nMinusOne = Ntotal.multiply(c1e8, mc, descriptor("n-1 = N_total * 1e-8"));
         var n = one.add(nMinusOne, mc, descriptor("n: refractive index of air (Ciddor / Birch-Downs)"));
 
@@ -220,7 +222,7 @@ public class GaugeBlockCalibration {
                 descriptor("f: fractional fringe order (observed)"));
 
         var totalOrder = m.add(f, mc, descriptor("m+f: total fringe order"));
-        var rawLength  = totalOrder.multiply(halfLambdaAir3, mc,
+        var rawLength = totalOrder.multiply(halfLambdaAir3, mc,
                 descriptor("L_raw: raw interferometric length, nm"));
 
         // ══════════════════════════════════════════════════════════════════════════
@@ -233,12 +235,12 @@ public class GaugeBlockCalibration {
                         of("source", "White 2025, Appendix B")));
         var tPart = ctx.wrapBigDecimal(data.fetchPartTemperature(),
                 descriptor("T_part: part temperature, degC"));
-        var tRef  = ctx.wrapBigDecimal(data.fetchReferenceTemperature(),
+        var tRef = ctx.wrapBigDecimal(data.fetchReferenceTemperature(),
                 descriptor("T_ref: ISO 1 reference temperature, degC"));
 
-        var deltaT        = tPart.subtract(tRef, mc, descriptor("deltaT: T_part - T_ref, K"));
+        var deltaT = tPart.subtract(tRef, mc, descriptor("deltaT: T_part - T_ref, K"));
         var thermalFactor = one.add(alpha.multiply(deltaT, mc, descriptor("alpha*deltaT")),
-                                    mc, descriptor("1 + alpha*deltaT: thermal correction factor"));
+                mc, descriptor("1 + alpha*deltaT: thermal correction factor"));
         var calibratedLength = rawLength.divide(thermalFactor, mc,
                 descriptor("L_cal: thermally corrected length, nm"));
 
@@ -255,10 +257,24 @@ public class GaugeBlockCalibration {
 
         // Store the full CPG snapshot alongside the result (as the paper proposes).
         var snapshot = ctx.snapshot();
+        final var provenanceGraph = ctx.getEnvironment().toJson(snapshot);
+        //store(provenanceGraph)
 
         // Paper (White 2025, Appendix B) reports the deviation as +2 nm
         // with expanded uncertainty U = 31 nm (k = 2).
-        assertEquals(new BigDecimal("2"),
-                deviation.getValue().setScale(0, RoundingMode.HALF_UP));
+        assertEquals(new BigDecimal("2.312023966746959377540205112"), deviation.getValue());
+    }
+
+    @Test
+    public void reproduce() throws IOException {
+
+        final var model = NetAssetValueCalculator.class.getResourceAsStream("/snapshots/metrology.json").readAllBytes();
+        final var snapshot = NavComputationContext.environment.fromJson(model);
+
+        //recover calculations
+        final var recalculated = NavComputationContext.environment.compute(snapshot);
+        final var deviation = recalculated.findSingleVariable("deltaL: length deviation from nominal, nm");
+
+        assertEquals(new BigDecimal("2.312023966746959377540205112"), deviation.getValue());
     }
 }

@@ -1,5 +1,6 @@
 package io.compprov.core;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.compprov.core.meta.Descriptor;
@@ -49,6 +50,8 @@ public class DefaultComputationEnvironment extends ComputationEnvironment {
         module.addDeserializer(VariableTrack.class, new VariableTrackDeserializer());
         module.addDeserializer(OperationTrack.class, new OperationTrackDeserializer());
         module.addDeserializer(Snapshot.Variable.class, new VariableDeserializer());
+        mapper.configOverride(BigDecimal.class).setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING));
+        mapper.configOverride(BigInteger.class).setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING));
         mapper.registerModule(module);
     }
 

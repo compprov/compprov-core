@@ -18,6 +18,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ContextTest {
 
+    private static DefaultComputationEnvironment environment = new DefaultComputationEnvironment();
+
     private WrappedMathContext mc(DefaultComputationContext ctx, int precision, RoundingMode rm) {
         return ctx.wrapMathContext(new MathContext(precision, rm), Descriptor.descriptor("mc"));
     }
@@ -25,7 +27,7 @@ public class ContextTest {
     @Test
     public void generates_output_data() {
         final var context = new DefaultComputationContext(
-                new DefaultComputationEnvironment(),
+                environment,
                 new DataContext(Descriptor.descriptor("test")));
         final var mc = mc(context, 3, RoundingMode.DOWN);
         final var x = context.wrapBigDecimal(new BigDecimal("1"), Descriptor.descriptor("x"));
@@ -46,7 +48,7 @@ public class ContextTest {
     @Test
     public void snapshot_re_calculations() {
         final var context = new DefaultComputationContext(
-                new DefaultComputationEnvironment(),
+                environment,
                 new DataContext(Descriptor.descriptor("test")));
         final var mc = context.wrapMathContext(new MathContext(3, RoundingMode.DOWN), Descriptor.descriptor("mc"));
         final var x = context.wrapBigDecimal(new BigDecimal("1"), Descriptor.descriptor("x"));
@@ -54,11 +56,11 @@ public class ContextTest {
         final var z = x.add(y, mc, null);
         final var result = x.subtract(z, mc, Descriptor.descriptor("result"));
 
-        String json = context.getEnvironment().toJson(context.snapshot());
+        String json = environment.toJson(context.snapshot());
         final var recovered = context.getEnvironment().fromJson(json);
 
         //reproduced
-        final var reproduced = DefaultComputationContext.compute(new DefaultComputationEnvironment(), recovered);
+        final var reproduced = environment.compute(recovered);
         assertEquals("1", reproduced.getVariable("i_2").getValue().toString());
         assertEquals("2", reproduced.getVariable("i_3").getValue().toString());
         assertEquals("3", reproduced.getVariable("o_4").getValue().toString());
@@ -69,7 +71,7 @@ public class ContextTest {
                 recovered,
                 Descriptor.descriptor("updated"),
                 Map.of("i_3", new ValueWithDescriptor(Descriptor.descriptor("new_value"), new BigDecimal("-12"))));
-        final var updatedComputation = DefaultComputationContext.compute(new DefaultComputationEnvironment(), updated);
+        final var updatedComputation = environment.compute(updated);
         assertEquals("1", updatedComputation.getVariable("i_2").getValue().toString());
         assertEquals("-12", updatedComputation.getVariable("i_3").getValue().toString());
         assertEquals("-11", updatedComputation.getVariable("o_4").getValue().toString());
