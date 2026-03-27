@@ -56,7 +56,8 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
           server-id: central
-
+          server-username: MAVEN_CENTRAL_USERNAME
+          server-password: MAVEN_CENTRAL_PASSWORD
       # -----------------------------------------------------------------------
       # Import the GPG private key so maven-gpg-plugin can sign the artifacts.
       - name: Import GPG key
