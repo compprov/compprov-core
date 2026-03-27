@@ -5,12 +5,8 @@
 #   - workflow_dispatch with an explicit version string  — manual / hotfix.
 #
 # Required repository secrets (Settings → Secrets and variables → Actions):
-#   MAVEN_CENTRAL_USERNAME   Central Portal token username
-#   MAVEN_CENTRAL_PASSWORD   Central Portal token password
-#   GPG_PRIVATE_KEY          ASCII-armored GPG private key
-#                            (gpg --armor --export-secret-keys <KEY_ID>)
-#   GPG_PASSPHRASE           Passphrase that protects the GPG key
-
+#   OSSRH_*   Sonatype
+#   GPG_*     Gpg
 name: Release to Maven Central
 
 on:
@@ -60,8 +56,6 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
           server-id: central
-          server-username: MAVEN_CENTRAL_USERNAME
-          server-password: MAVEN_CENTRAL_PASSWORD
 
       # -----------------------------------------------------------------------
       # Import the GPG private key so maven-gpg-plugin can sign the artifacts.
