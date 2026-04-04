@@ -61,7 +61,7 @@ jobs:
       # -----------------------------------------------------------------------
       # Import the GPG private key so maven-gpg-plugin can sign the artifacts.
       - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
+        uses: crazy-max/ghaction-import-gpg@e89d40939c28e39f97cf32126055eeae86ba74ec  # v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}

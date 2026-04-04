@@ -4,209 +4,211 @@ import io.compprov.core.ComputationEnvironment;
 import io.compprov.core.DataContext;
 import io.compprov.core.DefaultComputationContext;
 import io.compprov.core.DefaultComputationEnvironment;
+import io.compprov.core.meta.Meta;
+import io.compprov.core.variable.ValueWithDescriptor;
 import io.compprov.core.wrappers.WrappedBigDecimal;
 import io.compprov.examples.nav.NetAssetValueCalculator;
 import io.compprov.examples.nav.wrapped.NavComputationContext;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static io.compprov.core.meta.Descriptor.descriptor;
-import static io.compprov.core.meta.Meta.of;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Evaluates the mHM model output against observed river discharge using the
  * Kling-Gupta Efficiency (KGE) metric, as described in Villamar et al. (2025).
  *
- * <p>The paper applies the mesoscale Hydrologic Model (mHM) to the Moselle River
- * basin upstream of Perl (~11 500 km²) and compares two parameter sets P₁ and P₂
- * using KGE. It reports that P₁ outperforms P₂ but provides no actual numerical
- * values — see {@link HydrologyDataProvider} for the data provenance.
- *
  * <h2>KGE formula (Gupta et al. 2009)</h2>
  * <pre>
- *   KGE = 1 − ED
- *
- *   ED  = √[ (r−1)² + (α−1)² + (β−1)² ]
+ *   KGE = 1 − √[ (r−1)² + (α−1)² + (β−1)² ]
  *
  *   where:
  *     r = Pearson correlation = Σ(devObs · devSim) / √(Σ devObs² · Σ devSim²)
  *     α = variability ratio  = σ_sim / σ_obs  = √(Σ devSim² / Σ devObs²)
  *     β = bias ratio         = μ_sim / μ_obs
+ *
+ *   KGE=1: Perfect match between simulated and observed data.
+ *   KGE>0: Considered good or better than the mean, representing positive skill.
+ *   KGE>0.3-0.5: Often considered "behavioral" or good in various hydrologic studies, depending on the strictness of the criteria.
  * </pre>
- *
- * <p>A KGE of 1 is perfect; values below 0 indicate that the simulation is worse
- * than using the observed mean as a predictor.
- *
- * <p>The synthetic dataset is engineered to give <b>KGE = 0.9 exactly</b>
- * (r = 1, β = 1, α = 0.9) so the result can be verified by exact BigDecimal equality.
- * Every intermediate quantity — means, deviations, correlation, variability ratio,
- * and bias ratio — is tracked in the CPG.
  *
  * @see <a href="https://doi.org/10.1038/s41597-025-04521-6">Villamar et al. 2025, Sci. Data</a>
  * @see <a href="https://doi.org/10.1016/j.jhydrol.2009.08.003">Gupta et al. 2009 (KGE)</a>
  */
 public class MhmDischargeEvaluation {
 
+    private static final LocalDate startDate = LocalDate.of(1991, 1, 1);
+
     private static final ComputationEnvironment ENVIRONMENT = new DefaultComputationEnvironment();
 
     @Test
-    public void evaluateParameterSetP1() {
-        var ctx = new DefaultComputationContext(ENVIRONMENT,
-                new DataContext(descriptor("mHM discharge evaluation — Moselle at Perl, parameter set P1")));
-        var data = new HydrologyDataProvider();
+    public void evaluateSimulation00() {
+        final var ctx = new DefaultComputationContext(ENVIRONMENT,
+                new DataContext(descriptor("mHM discharge evaluation", Meta.of(
+                        "metric", "KGE",
+                        "location", "Moselle River basin",
+                        "date-from", "1991-01-01",
+                        "date-to", "1991-06-30",
+                        "units", "m3/s",
+                        "simulation#", "00"))));
+        final var data = new HydrologyDataProvider(ENVIRONMENT.getMapper());
 
-        // ── Shared constants ──────────────────────────────────────────────────────
-        var mc  = ctx.wrapMathContext(MathContext.DECIMAL128, descriptor("computation precision"));
-        var one = ctx.wrapBigDecimal(BigDecimal.ONE, descriptor("constant 1"));
+        // Shared constants
+        final var mc = ctx.wrapMathContext(MathContext.DECIMAL128, descriptor("computation precision"));
+        final var one = ctx.wrapBigDecimal(BigDecimal.ONE, descriptor("constant 1"));
+        final var two = ctx.wrapInteger(2, descriptor("constant 2"));
+        final var n = ctx.wrapBigDecimal(BigDecimal.valueOf(data.fetchObservedValues().size()), descriptor("daysCount"));
 
-        // ── Observed discharge (gauge station Perl) ───────────────────────────────
-        var obsValues = data.fetchObservedDischarge();
-        var qObs = new ArrayList<WrappedBigDecimal>(obsValues.size());
-        for (int i = 0; i < obsValues.size(); i++) {
-            qObs.add(ctx.wrapBigDecimal(obsValues.get(i),
-                    descriptor("q_obs[" + (i + 1) + "]: observed discharge day " + (i + 1) + ", m3/s",
-                            of("station", "Moselle at Perl"))));
+        //wrap values, calculate means, devs, and squired devs
+        Map<String, List<WrappedBigDecimal>> values = new HashMap<>();
+        Map<String, List<WrappedBigDecimal>> devValues = new HashMap<>();
+        Map<String, List<WrappedBigDecimal>> sqDevValues = new HashMap<>();
+        for (String key : List.of("observed", "00")) {
+
+            String prefix = "observed".equals(key) ? "observed" : "sim";
+
+            //wrap values
+            LocalDate date = startDate;
+            final var scalarValues = data.fetchSimulatedValues(key);
+            List<WrappedBigDecimal> wrappedValues = new ArrayList<>();
+            values.put(prefix, wrappedValues);
+            for (var value : scalarValues) {
+                wrappedValues.add(ctx.wrapBigDecimal(value, descriptor(prefix + "_" + date)));
+                date = date.plusDays(1);
+            }
+
+            //calculate mean
+            final var mean = wrappedValues.get(0)
+                    .addBulk(wrappedValues.subList(1, wrappedValues.size()), mc, descriptor(prefix + "_sum"))
+                    .divide(n, mc, descriptor(prefix + "_mean"));
+
+            //calculate devs and sqDevs
+            date = startDate;
+            List<WrappedBigDecimal> wrappedDevs = new ArrayList<>();
+            devValues.put(prefix, wrappedDevs);
+            List<WrappedBigDecimal> wrappedSqDevs = new ArrayList<>();
+            sqDevValues.put(prefix, wrappedSqDevs);
+            for (var wrappedValue : wrappedValues) {
+                final var dev = mean.subtract(wrappedValue, mc, descriptor(prefix + "_" + date + "_dev"));
+                wrappedDevs.add(dev);
+
+                final var sqDev = dev.multiply(dev, mc, descriptor(prefix + "_" + date + "_sqdev"));
+                wrappedSqDevs.add(sqDev);
+
+                date = date.plusDays(1);
+            }
         }
 
-        // ── Simulated discharge (mHM model, parameter set P1) ────────────────────
-        var simValues = data.fetchSimulatedDischarge();
-        var qSim = new ArrayList<WrappedBigDecimal>(simValues.size());
-        for (int i = 0; i < simValues.size(); i++) {
-            qSim.add(ctx.wrapBigDecimal(simValues.get(i),
-                    descriptor("q_sim[" + (i + 1) + "]: simulated discharge day " + (i + 1) + ", m3/s",
-                            of("model", "mHM", "parameter_set", "P1"))));
+        //calculate crossDevs, dev sums, r, a, b and kge
+        List<WrappedBigDecimal> obsDevs = devValues.get("observed");
+        List<WrappedBigDecimal> simDevs = devValues.get("sim");
+        List<WrappedBigDecimal> obsSqDevs = sqDevValues.get("observed");
+        List<WrappedBigDecimal> simSqDevs = sqDevValues.get("sim");
+        WrappedBigDecimal obsSumSqDevs = obsSqDevs.get(0).addBulk(obsSqDevs.subList(1, obsSqDevs.size()), mc, descriptor("observed_sum_sqdev"));
+        WrappedBigDecimal simSumSqDevs = simSqDevs.get(0).addBulk(simSqDevs.subList(1, simSqDevs.size()), mc, descriptor("sim_sum_sqdev"));
+        WrappedBigDecimal obsMean = (WrappedBigDecimal) ctx.findSingleVariable("observed_mean");
+        WrappedBigDecimal simMean = (WrappedBigDecimal) ctx.findSingleVariable("sim_mean");
+
+        //cross dev sum
+        LocalDate date = startDate;
+        List<WrappedBigDecimal> crossDevs = new ArrayList<>();
+        for (int i = 0; i < obsDevs.size(); i++) {
+            final var crossDev = obsDevs.get(i).multiply(simDevs.get(i), mc, descriptor("sim_" + date + "_crossdev"));
+            date = date.plusDays(1);
+            crossDevs.add(crossDev);
         }
+        final var sumCrossDevs = crossDevs.get(0).addBulk(crossDevs.subList(1, crossDevs.size()), mc, descriptor("sim_sum_crossdev"));
 
-        var n = ctx.wrapBigDecimal(
-                new BigDecimal(obsValues.size()),
-                descriptor("n: number of observation days"));
+        final var r = sumCrossDevs.divide(
+                obsSumSqDevs.multiply(simSumSqDevs, mc, null).sqrt(mc, null),
+                mc,
+                descriptor("r"));
+        final var a = simSumSqDevs.divide(obsSumSqDevs, mc, null).sqrt(mc, descriptor("a"));
+        final var b = simMean.divide(obsMean, mc, descriptor("b"));
 
-        // ══════════════════════════════════════════════════════════════════════════
-        // STEP 1 — MEANS
-        // ══════════════════════════════════════════════════════════════════════════
+        //1-
+        final var kge = one.subtract(
+                //r-1
+                r.subtract(one, mc, null)
+                        //(r-1)^2
+                        .pow(two, mc, null)
+                        //(r-1)^2+(a-1)^2+(b-1)^2
+                        .addBulk(List.of(
+                                a.subtract(one, mc, null).pow(two, mc, null),
+                                b.subtract(one, mc, null).pow(two, mc, null)
+                        ), mc, null)
+                        //SQRT[(r-1)^2+(a-1)^2+(b-1)^2]
+                        .sqrt(mc, null),
+                mc, descriptor("kge")
+        );
 
-        var sumObs = qObs.get(0).addBulk(qObs.subList(1, qObs.size()), mc,
-                descriptor("sum of observed discharge, m3/s"));
-        var muObs = sumObs.divide(n, mc,
-                descriptor("mu_obs: mean observed discharge, m3/s"));
-
-        var sumSim = qSim.get(0).addBulk(qSim.subList(1, qSim.size()), mc,
-                descriptor("sum of simulated discharge, m3/s"));
-        var muSim = sumSim.divide(n, mc,
-                descriptor("mu_sim: mean simulated discharge, m3/s"));
-
-        // ══════════════════════════════════════════════════════════════════════════
-        // STEP 2 — DEVIATIONS FROM MEAN
-        // ══════════════════════════════════════════════════════════════════════════
-
-        var devObs = new ArrayList<WrappedBigDecimal>(qObs.size());
-        var devSim = new ArrayList<WrappedBigDecimal>(qSim.size());
-        for (int i = 0; i < qObs.size(); i++) {
-            devObs.add(qObs.get(i).subtract(muObs, mc,
-                    descriptor("devObs[" + (i + 1) + "] = q_obs[" + (i + 1) + "] - mu_obs, m3/s")));
-            devSim.add(qSim.get(i).subtract(muSim, mc,
-                    descriptor("devSim[" + (i + 1) + "] = q_sim[" + (i + 1) + "] - mu_sim, m3/s")));
-        }
-
-        // ══════════════════════════════════════════════════════════════════════════
-        // STEP 3 — SQUARED DEVIATIONS AND CROSS PRODUCTS
-        // ══════════════════════════════════════════════════════════════════════════
-
-        var sqDevObs  = new ArrayList<WrappedBigDecimal>(qObs.size());
-        var sqDevSim  = new ArrayList<WrappedBigDecimal>(qSim.size());
-        var crossProds = new ArrayList<WrappedBigDecimal>(qObs.size());
-        for (int i = 0; i < devObs.size(); i++) {
-            sqDevObs.add(devObs.get(i).multiply(devObs.get(i), mc,
-                    descriptor("devObs[" + (i + 1) + "]^2")));
-            sqDevSim.add(devSim.get(i).multiply(devSim.get(i), mc,
-                    descriptor("devSim[" + (i + 1) + "]^2")));
-            crossProds.add(devObs.get(i).multiply(devSim.get(i), mc,
-                    descriptor("cross[" + (i + 1) + "] = devObs * devSim")));
-        }
-
-        // ══════════════════════════════════════════════════════════════════════════
-        // STEP 4 — SUMS NEEDED FOR r AND α
-        // ══════════════════════════════════════════════════════════════════════════
-
-        // sumSqObs = 100 000,  sumSqSim = 81 000,  sumCross = 90 000
-        var sumSqObs = sqDevObs.get(0).addBulk(sqDevObs.subList(1, sqDevObs.size()), mc,
-                descriptor("sum of squared observed deviations"));
-        var sumSqSim = sqDevSim.get(0).addBulk(sqDevSim.subList(1, sqDevSim.size()), mc,
-                descriptor("sum of squared simulated deviations"));
-        var sumCross = crossProds.get(0).addBulk(crossProds.subList(1, crossProds.size()), mc,
-                descriptor("sum of cross products devObs*devSim"));
-
-        // ══════════════════════════════════════════════════════════════════════════
-        // STEP 5 — PEARSON CORRELATION COEFFICIENT r
-        // r = sumCross / sqrt(sumSqObs * sumSqSim)
-        // With these data: 90000 / sqrt(100000 * 81000) = 90000 / 90000 = 1
-        // ══════════════════════════════════════════════════════════════════════════
-
-        var denomR = sumSqObs.multiply(sumSqSim, mc, descriptor("sumSqObs * sumSqSim"))
-                             .sqrt(mc, descriptor("sqrt(sumSqObs * sumSqSim)"));
-        var r = sumCross.divide(denomR, mc,
-                descriptor("r: Pearson linear correlation coefficient"));
-
-        // ══════════════════════════════════════════════════════════════════════════
-        // STEP 6 — VARIABILITY RATIO α = σ_sim / σ_obs = sqrt(sumSqSim / sumSqObs)
-        // With these data: sqrt(81000 / 100000) = sqrt(0.81) = 0.9
-        // ══════════════════════════════════════════════════════════════════════════
-
-        var alpha = sumSqSim.divide(sumSqObs, mc, descriptor("sumSqSim / sumSqObs"))
-                            .sqrt(mc, descriptor("alpha: variability ratio sigma_sim / sigma_obs"));
-
-        // ══════════════════════════════════════════════════════════════════════════
-        // STEP 7 — BIAS RATIO β = μ_sim / μ_obs
-        // With these data: 300 / 300 = 1
-        // ══════════════════════════════════════════════════════════════════════════
-
-        var beta = muSim.divide(muObs, mc,
-                descriptor("beta: bias ratio mu_sim / mu_obs"));
-
-        // ══════════════════════════════════════════════════════════════════════════
-        // STEP 8 — KGE = 1 − √[ (r−1)² + (α−1)² + (β−1)² ]
-        // With these data: 1 − sqrt(0 + 0.01 + 0) = 1 − 0.1 = 0.9
-        // ══════════════════════════════════════════════════════════════════════════
-
-        var rErr     = r.subtract(one, mc, descriptor("r - 1"));
-        var alphaErr = alpha.subtract(one, mc, descriptor("alpha - 1"));
-        var betaErr  = beta.subtract(one, mc, descriptor("beta - 1"));
-
-        var edSq = rErr.multiply(rErr, mc, descriptor("(r-1)^2"))
-                       .addBulk(List.of(
-                               alphaErr.multiply(alphaErr, mc, descriptor("(alpha-1)^2")),
-                               betaErr.multiply(betaErr,  mc, descriptor("(beta-1)^2"))
-                       ), mc, descriptor("ED^2 = (r-1)^2 + (alpha-1)^2 + (beta-1)^2"));
-
-        var ed  = edSq.sqrt(mc, descriptor("ED: Euclidean distance in KGE space"));
-        var kge = one.subtract(ed, mc, descriptor("KGE: Kling-Gupta Efficiency"));
-
-        // Store the full CPG snapshot (provenance record) alongside the score.
         var snapshot = ctx.snapshot();
         final var provenanceGraph = ctx.getEnvironment().toJson(snapshot);
         //store(provenanceGraph)
 
-        // Villamar et al. (2025) report P1 outperforms P2 with KGE values mostly
-        // above 0.5.  With the synthetic P1 data (r=1, β=1, α=0.9), KGE = 0.9 exactly.
-        assertEquals(0, kge.getValue().compareTo(new BigDecimal("0.9")));
+        Assertions.assertEquals(new BigDecimal("0.8686859963808819097039722873919439"), kge.getValue());
     }
 
     @Test
-    public void reproduce() throws IOException {
-
+    public void findBestModelUsingReproducibilityWithSubstitution() throws IOException {
+        final var data = new HydrologyDataProvider(ENVIRONMENT.getMapper());
         final var model = NetAssetValueCalculator.class.getResourceAsStream("/snapshots/hydrology.json").readAllBytes();
         final var snapshot = NavComputationContext.environment.fromJson(model);
 
-        //recover calculations
-        final var recalculated = NavComputationContext.environment.compute(snapshot);
-        final WrappedBigDecimal kge = (WrappedBigDecimal) recalculated.findSingleVariable("KGE: Kling-Gupta Efficiency");
+        //calculate KGE for every hydrological simulation
+        Map<String, BigDecimal> kges = new HashMap<>();
+        for (String caseId : data.fetchCaseIds()) {
 
-        assertEquals(0, new BigDecimal("0.9").compareTo(kge.getValue()));
+            //prepare substitution map
+            Map<String, ValueWithDescriptor> updates = new HashMap<>();
+            final var scalarValues = data.fetchSimulatedValues(caseId);
+            int simNumericId = snapshot.variables()
+                    .stream()
+                    .filter(v -> v.track().getDescriptor().getName().equals("sim_" + startDate))
+                    .findFirst()
+                    .get()
+                    .track()
+                    .getNumericId();
+            LocalDate date = startDate;
+            for (var scalarValue : scalarValues) {
+                updates.put("i_" + simNumericId++, new ValueWithDescriptor(descriptor("sim_" + date), scalarValue));
+                date = date.plusDays(1);
+            }
+
+            final var caseSpecificSnapshot = NavComputationContext.environment.copyWith(
+                    snapshot,
+                    descriptor("mHM discharge evaluation", Meta.of(
+                            "metric", "KGE",
+                            "location", "Moselle River basin",
+                            "date-from", "1991-01-01",
+                            "date-to", "1991-06-30",
+                            "units", "m3/s",
+                            "simulation#", caseId)),
+                    updates);
+            final var ctx = NavComputationContext.environment.compute(caseSpecificSnapshot);
+            final var kge = ctx.findSingleVariable("kge");
+            kges.put(caseId, (BigDecimal) kge.getValue());
+        }
+
+        //find max kge
+        BigDecimal maxKge = new BigDecimal("-1");
+        String maxKgeCaseId = "none";
+        for (var e : kges.entrySet()) {
+            if (e.getValue().compareTo(maxKge) > 0) {
+                maxKge = e.getValue();
+                maxKgeCaseId = e.getKey();
+            }
+        }
+        Assertions.assertEquals("03", maxKgeCaseId);
+        Assertions.assertEquals(new BigDecimal("0.9391174691699493751867141555186104"), maxKge);
     }
 }

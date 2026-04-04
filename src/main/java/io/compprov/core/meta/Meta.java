@@ -64,6 +64,29 @@ public class Meta {
         }});
     }
 
+    public static Meta of(String k1, Object v1, String k2, Object v2, String k3, Object v3, String k4, Object v4,
+                          String k5, Object v5) {
+        return new Meta(new LinkedHashMap() {{
+            put(k1, v1);
+            put(k2, v2);
+            put(k3, v3);
+            put(k4, v4);
+            put(k5, v5);
+        }});
+    }
+
+    public static Meta of(String k1, Object v1, String k2, Object v2, String k3, Object v3, String k4, Object v4,
+                          String k5, Object v5, String k6, Object v6) {
+        return new Meta(new LinkedHashMap() {{
+            put(k1, v1);
+            put(k2, v2);
+            put(k3, v3);
+            put(k4, v4);
+            put(k5, v5);
+            put(k6, v6);
+        }});
+    }
+
     public String first() {
         if (parameters.isEmpty()) {
             return "";
