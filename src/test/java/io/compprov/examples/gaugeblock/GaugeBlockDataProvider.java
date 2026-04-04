@@ -23,7 +23,6 @@ import java.math.BigDecimal;
  *   <tr><td>fetchAirTemperature</td><td>20.00 °C</td><td>Fabricated stub — paper lists air temperature as an influence quantity but gives no value</td></tr>
  *   <tr><td>fetchAirPressure</td><td>101 325.0 Pa</td><td>Fabricated stub — paper lists pressure as an influence quantity but gives no value</td></tr>
  *   <tr><td>fetchRelativeHumidity</td><td>0.50</td><td>Fabricated stub — paper lists humidity as an influence quantity but gives no value</td></tr>
- *   <tr><td>fetchSaturationVaporPressure</td><td>2338.0 Pa</td><td>Wexler (1976) formula evaluated at 20 °C; not from the paper. The exp() sub-step is not tracked in the CPG.</td></tr>
  *   <tr><td>fetchPartTemperature</td><td>20.001 °C</td><td>Fabricated stub — paper lists part temperature as an influence quantity but gives no value</td></tr>
  *   <tr><td>fetchIntegerFringeOrder</td><td>22123</td><td>Fabricated stub — back-calculated from nominal length; paper gives no fringe observations</td></tr>
  *   <tr><td>fetchFractionalFringeOrder</td><td>0.23675</td><td>Fabricated stub — chosen so the full formula chain produces ≈ +2 nm; paper gives no fringe observations</td></tr>
@@ -95,20 +94,6 @@ public class GaugeBlockDataProvider {
      */
     public BigDecimal fetchRelativeHumidity() {
         return new BigDecimal("0.50");
-    }
-
-    /**
-     * Saturation vapor pressure of water at the measurement temperature, Pa.
-     *
-     * <p><b>Source:</b> NOT from the paper. Computed from the Wexler (1976) formula:
-     * {@code svp = exp(A·T² + B·T + C + D/T)} evaluated at T = 293.15 K, giving
-     * approximately 2338 Pa. The {@code exp()} sub-step is <b>not</b> tracked in the
-     * CPG because {@code BigDecimal} does not support transcendental functions natively.
-     * In production this value would come from a calibrated hygrometer reading or from
-     * a separate, fully traced computation chain.
-     */
-    public BigDecimal fetchSaturationVaporPressure() {
-        return new BigDecimal("2338.0");
     }
 
     /**

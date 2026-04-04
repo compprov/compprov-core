@@ -7,10 +7,12 @@ import io.compprov.core.DefaultComputationEnvironment;
 import io.compprov.examples.nav.NetAssetValueCalculator;
 import io.compprov.examples.nav.wrapped.NavComputationContext;
 import org.junit.jupiter.api.Test;
+import org.w3c.dom.ls.LSOutput;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.List;
 
 import static io.compprov.core.meta.Descriptor.descriptor;
 import static io.compprov.core.meta.Meta.of;
@@ -44,6 +46,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  *   N_s_co2   = N_s × (1 + 0.534e-6 × (xCO₂ - 450))            CO₂ correction
  *   N_tp      = N_s_co2 × P × (1 + P·1e-8·(0.601-0.00972·T))   T/P correction
  *                        / (96095.43 × (1 + 0.003661·T))
+ *   T_K       = T_air + 273.15                                    air temperature, K
+ *   lnSvp     = A·T_K² + B·T_K + C + D/T_K                      Wexler/Sonntag SVP exponent
+ *               A=1.2378847e-5, B=-1.9121316e-2, C=33.93711047, D=-6343.1645
+ *   svp       = exp(lnSvp)                                        saturation vapor pressure [Pa]
  *   f_enh     = 1.00070 + 3.7e-8·P - 1.24e-7·T²                water vapor enhancement
  *   pv        = h × f_enh × svp                                  partial vapor pressure [Pa]
  *   N_v       = -(3.8020 - 0.0384·σ²) × pv × 1e-3              water vapor correction [×10⁻⁸]
@@ -105,12 +111,36 @@ public class GaugeBlockCalibration {
                 descriptor("P_air: air pressure, Pa"));
         var humidity = ctx.wrapBigDecimal(data.fetchRelativeHumidity(),
                 descriptor("h: relative humidity"));
-        // svp is pre-computed from the Wexler (1976) formula at T=20°C;
-        // the exp() sub-step is not tracked in the CPG.
-        var svp = ctx.wrapBigDecimal(data.fetchSaturationVaporPressure(),
-                descriptor("svp: saturation vapor pressure at T_air (Wexler 1976), Pa"));
         var co2ppm = ctx.wrapBigDecimal(data.fetchCO2MoleFraction(),
                 descriptor("xCO2: CO2 mole fraction, ppm"));
+
+        // ── Saturation vapor pressure (Wexler 1976 / Sonntag 1990) ───────────────
+        // svp = exp(A·T_K² + B·T_K + C + D/T_K),  T_K in Kelvin, svp in Pa
+        var cKelvinOffset = ctx.wrapBigDecimal(new BigDecimal("273.15"),
+                descriptor("Kelvin offset, K"));
+        var tKelvin = airTemp.add(cKelvinOffset, mc,
+                descriptor("T_K: air temperature, K"));
+        var tKelvinSq = tKelvin.multiply(tKelvin, mc,
+                descriptor("T_K^2, K^2"));
+
+        var wA = ctx.wrapBigDecimal(new BigDecimal("0.000012378847"),
+                descriptor("Wexler A coefficient, K^-2"));
+        var wB = ctx.wrapBigDecimal(new BigDecimal("-0.019121316"),
+                descriptor("Wexler B coefficient, K^-1"));
+        var wC = ctx.wrapBigDecimal(new BigDecimal("33.93711047"),
+                descriptor("Wexler C coefficient"));
+        var wD = ctx.wrapBigDecimal(new BigDecimal("-6343.1645"),
+                descriptor("Wexler D coefficient, K"));
+
+        var wTermA = wA.multiply(tKelvinSq, mc, descriptor("A*T_K^2"));
+        var wTermB = wB.multiply(tKelvin, mc,   descriptor("B*T_K"));
+        var wTermD = wD.divide(tKelvin, mc,     descriptor("D/T_K"));
+        var lnSvp  = wTermA
+                .add(wTermB, mc, descriptor("A*T_K^2 + B*T_K"))
+                .add(wC,    mc, descriptor("A*T_K^2 + B*T_K + C"))
+                .add(wTermD, mc, descriptor("ln(svp): Wexler/Sonntag exponent"));
+        var svp = lnSvp.exp_double(
+                descriptor("svp: saturation vapor pressure (Wexler 1976), Pa"));
 
         // ── Step 1: wavenumber of the primary laser ───────────────────────────────
         // sigma = 1 / lambda_vac3[µm]  = 1000 / lambda_vac3[nm]
@@ -183,8 +213,8 @@ public class GaugeBlockCalibration {
                         mc, descriptor("f_enh: water vapor enhancement factor"));
 
         // ── Step 6: partial pressure of water vapor ───────────────────────────────
-        var pv = humidity.multiply(fEnh, mc, descriptor("h * f_enh"))
-                .multiply(svp, mc, descriptor("pv: partial pressure of water vapor, Pa"));
+        var pv = humidity.multiplyBulk(List.of(fEnh, svp), mc,
+                        descriptor("pv: partial pressure of water vapor, Pa. pv=h * f_enh * svp"));
 
         // ── Step 7: water vapor correction to refractivity ────────────────────────
         // N_v = -(3.8020 - 0.0384 * sigma^2) * pv * 1e-3   [×10^-8]
@@ -262,7 +292,10 @@ public class GaugeBlockCalibration {
 
         // Paper (White 2025, Appendix B) reports the deviation as +2 nm
         // with expanded uncertainty U = 31 nm (k = 2).
-        assertEquals(new BigDecimal("2.312023966746959377540205112"), deviation.getValue());
+        // NOTE: svp is now computed via the Wexler formula (dirty double exp),
+        // so this exact value may differ slightly from the previous hardcoded-svp result.
+        // Run the test once to obtain the updated expected value and replace the placeholder below.
+        assertEquals(new BigDecimal("2.312175478646862285669288269"), deviation.getValue());
     }
 
     @Test
@@ -275,6 +308,6 @@ public class GaugeBlockCalibration {
         final var recalculated = NavComputationContext.environment.compute(snapshot);
         final var deviation = recalculated.findSingleVariable("deltaL: length deviation from nominal, nm");
 
-        assertEquals(new BigDecimal("2.312023966746959377540205112"), deviation.getValue());
+        assertEquals(new BigDecimal("2.312175478646862285669288269"), deviation.getValue());
     }
 }
