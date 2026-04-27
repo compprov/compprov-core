@@ -38,10 +38,10 @@ public class HydrologyDataProvider {
     }
 
     public List<String> fetchCaseIds() {
-        return Arrays.asList("00", "01", "03", "05", "06", "07", "08", "09", "10", "11", "12");
+        return Arrays.asList("00", "01", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12");
     }
 
     public List<String> allIds() {
-        return Arrays.asList("observed", "00", "01", "03", "05", "06", "07", "08", "09", "10", "11", "12");
+        return Arrays.asList("observed", "00", "01", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12");
     }
 }
