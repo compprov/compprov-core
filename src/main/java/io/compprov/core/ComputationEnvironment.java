@@ -10,6 +10,7 @@ import io.compprov.core.variable.VariableTrack;
 import io.compprov.core.variable.VariableWrapper;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.util.*;
@@ -64,6 +65,14 @@ public class ComputationEnvironment {
         try {
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(snapshot);
         } catch (JsonProcessingException e) {
+            throw new IllegalStateException("JSON serialization failed", e);
+        }
+    }
+
+    public void toJson(Snapshot snapshot, OutputStream os) {
+        try {
+            mapper.writerWithDefaultPrettyPrinter().writeValue(os, snapshot);
+        } catch (IOException e) {
             throw new IllegalStateException("JSON serialization failed", e);
         }
     }

@@ -4,7 +4,6 @@ import io.compprov.core.ComputationContext;
 import io.compprov.core.meta.Descriptor;
 
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 public abstract class AbstractWrappedVariable<T> implements WrappedVariable<T> {
     private final ComputationContext context;

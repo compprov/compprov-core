@@ -57,11 +57,10 @@ public class NetAssetValueCalculator {
         //convert to usd and sum
         final var nav = binanceBtcAmount.convert(btcUsdRate, descriptor("BTC->USD"))
                 .addBulk(List.of(
-                                binanceEthAmount.convert(ethUsdRate, descriptor("ETH->USD")),
-                                binanceUsdcAmount.convert(usdcUsdRate, descriptor("USDC->USD")),
-                                binanceUsdcAmount.convert(usdcUsdRate, descriptor("USDC->USD")),
-                                stakedEthAmount.convert(ethUsdRate, descriptor("ETH->USD")),
-                                morphoUsdcAmount.convert(usdcUsdRate, descriptor("USDC->USD"))),
+                                binanceEthAmount.convert(ethUsdRate, descriptor("ETH(Binance)->USD")),
+                                binanceUsdcAmount.convert(usdcUsdRate, descriptor("USDC(Binance)->USD")),
+                                stakedEthAmount.convert(ethUsdRate, descriptor("ETH(Staked)->USD")),
+                                morphoUsdcAmount.convert(usdcUsdRate, descriptor("USDC(Morpho)->USD"))),
                         descriptor("Assets sum"));
 
         //store this JSON with the result
@@ -70,7 +69,7 @@ public class NetAssetValueCalculator {
         //store(provenanceGraph)
 
         final var result = nav.getValue();
-        assertEquals(new Amount(Currency.USD, new BigDecimal("432287.39")), result);
+        assertEquals(new Amount(Currency.USD, new BigDecimal("431749.17")), result);
     }
 
     @Test
@@ -83,7 +82,7 @@ public class NetAssetValueCalculator {
         final var recalculated = NavComputationContext.environment.compute(snapshot);
         final var result = recalculated.findSingleVariable("Assets sum").getValue();
 
-        assertEquals(new Amount(Currency.USD, new BigDecimal("432287.39")), result);
+        assertEquals(new Amount(Currency.USD, new BigDecimal("431749.17")), result);
     }
 
     @Test
@@ -94,16 +93,25 @@ public class NetAssetValueCalculator {
         final var recalculated = NavComputationContext.environment.compute(snapshot);
 
         final var btcPriceId = recalculated.findSingleVariable("BTC/USD rate").getVariableTrack().getId();
+        final var ethPriceId = recalculated.findSingleVariable("ETH/USD rate").getVariableTrack().getId();
+        final var usdcPriceId = recalculated.findSingleVariable("USDC/USD rate").getVariableTrack().getId();
         final var btcGrowSimulation = NavComputationContext.environment.copyWith(
                 snapshot,
-                descriptor("Nav with increased BTC price: 92695.63"),
+                descriptor("Nav with updated prices"),
                 Map.of(btcPriceId, new ValueWithDescriptor(
-                        descriptor("BTC/USD rate", Meta.of("origin", "Simulation")),
-                        new Rate(Currency.BTC, Currency.USD, new BigDecimal("92685.63")))));
+                                descriptor("BTC/USD rate", Meta.of("origin", "Simulation")),
+                                new Rate(Currency.BTC, Currency.USD, new BigDecimal("72313.2"))),
+                        ethPriceId, new ValueWithDescriptor(
+                                descriptor("ETH/USD rate", Meta.of("origin", "Simulation")),
+                                new Rate(Currency.ETH, Currency.USD, new BigDecimal("2193.31"))),
+                        usdcPriceId, new ValueWithDescriptor(
+                                descriptor("USDC/USD rate", Meta.of("origin", "Simulation")),
+                                new Rate(Currency.USDC, Currency.USD, new BigDecimal("1.0")))
+                        ));
 
         //simulate
         final var simulation = NavComputationContext.environment.compute(btcGrowSimulation);
         final WrappedAmount simulatedNav = (WrappedAmount) simulation.findSingleVariable("Assets sum");
-        assertEquals(new Amount(Currency.USD, new BigDecimal("482759.68")), simulatedNav.getValue());
+        assertEquals(new Amount(Currency.USD, new BigDecimal("439829.22")), simulatedNav.getValue());
     }
 }
