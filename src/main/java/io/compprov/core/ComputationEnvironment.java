@@ -128,11 +128,11 @@ public class ComputationEnvironment {
                     //mapping through the variable id
                     stringBuilder.append("\r\n\t");
                     stringBuilder.append(writeValueSingleString(
-                            operation.arguments().entrySet()
+                            operation.arguments()
                                     .stream()
-                                    .map(e -> "%s=%s".formatted(
-                                            e.getKey(),
-                                            e.getValue()))
+                                    .map(pair -> "%s=%s".formatted(
+                                            pair.key(),
+                                            pair.value()))
                                     .toList()
                     ));
                     stringBuilder.append("->");
@@ -141,11 +141,11 @@ public class ComputationEnvironment {
                     //mapping through the variable name
                     stringBuilder.append("\r\n\t");
                     stringBuilder.append(writeValueSingleString(
-                            operation.arguments().entrySet()
+                            operation.arguments()
                                     .stream()
-                                    .map(e -> "%s=%s".formatted(
-                                            e.getKey(),
-                                            variableMap.get(e.getValue()).track().getDescriptor().getName()))
+                                    .map(pair -> "%s=%s".formatted(
+                                            pair.key(),
+                                            variableMap.get(pair.value()).track().getDescriptor().getName()))
                                     .toList()
                     ));
                     stringBuilder.append("->");
@@ -154,11 +154,11 @@ public class ComputationEnvironment {
                     //mapping through the variable value
                     stringBuilder.append("\r\n\t");
                     stringBuilder.append(writeValueSingleString(
-                            operation.arguments().entrySet()
+                            operation.arguments()
                                     .stream()
-                                    .map(e -> "%s=%s".formatted(
-                                            e.getKey(),
-                                            variableMap.get(e.getValue()).value()))
+                                    .map(pair -> "%s=%s".formatted(
+                                            pair.key(),
+                                            variableMap.get(pair.value()).value()))
                                     .toList()
                     ));
                     stringBuilder.append("->");
