@@ -259,10 +259,10 @@ public class WrappedBigDecimalTest {
 
         // The operation's inputs should reference a, b, and mc by ID
         assertEquals(3, op.arguments().size());
-        var inputIds = op.arguments().values().stream().toList();
-        assertTrue(inputIds.contains(a.getVariableTrack().getId()));
-        assertTrue(inputIds.contains(b.getVariableTrack().getId()));
-        assertTrue(inputIds.contains(mathContext.getVariableTrack().getId()));
+        var inputs = op.arguments();
+        assertEquals(a.getVariableTrack().getId(), inputs.get(0).value());
+        assertEquals(b.getVariableTrack().getId(), inputs.get(1).value());
+        assertEquals(mathContext.getVariableTrack().getId(), inputs.get(2).value());
 
         // The result ID should map to the sum variable
         assertEquals(sum.getVariableTrack().getId(), op.resultId());

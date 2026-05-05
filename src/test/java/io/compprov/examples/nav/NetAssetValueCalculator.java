@@ -73,9 +73,9 @@ public class NetAssetValueCalculator {
     }
 
     @Test
-    public void reproduce() throws IOException {
+    public void reproduce_v01() throws IOException {
 
-        final var model = NetAssetValueCalculator.class.getResourceAsStream("/snapshots/nav.json").readAllBytes();
+        final var model = NetAssetValueCalculator.class.getResourceAsStream("/snapshots/nav_v0.1.json").readAllBytes();
         final var snapshot = NavComputationContext.environment.fromJson(model);
 
         //recover calculations
@@ -86,9 +86,9 @@ public class NetAssetValueCalculator {
     }
 
     @Test
-    public void simulate() throws IOException {
+    public void simulate_v01() throws IOException {
 
-        final var model = NetAssetValueCalculator.class.getResourceAsStream("/snapshots/nav.json").readAllBytes();
+        final var model = NetAssetValueCalculator.class.getResourceAsStream("/snapshots/nav_v0.1.json").readAllBytes();
         final var snapshot = NavComputationContext.environment.fromJson(model);
         final var recalculated = NavComputationContext.environment.compute(snapshot);
 
@@ -107,7 +107,50 @@ public class NetAssetValueCalculator {
                         usdcPriceId, new ValueWithDescriptor(
                                 descriptor("USDC/USD rate", Meta.of("origin", "Simulation")),
                                 new Rate(Currency.USDC, Currency.USD, new BigDecimal("1.0")))
-                        ));
+                ));
+
+        //simulate
+        final var simulation = NavComputationContext.environment.compute(btcGrowSimulation);
+        final WrappedAmount simulatedNav = (WrappedAmount) simulation.findSingleVariable("Assets sum");
+        assertEquals(new Amount(Currency.USD, new BigDecimal("439829.22")), simulatedNav.getValue());
+    }
+
+    @Test
+    public void reproduce_v02() throws IOException {
+
+        final var model = NetAssetValueCalculator.class.getResourceAsStream("/snapshots/nav_v0.2.json").readAllBytes();
+        final var snapshot = NavComputationContext.environment.fromJson(model);
+
+        //recover calculations
+        final var recalculated = NavComputationContext.environment.compute(snapshot);
+        final var result = recalculated.findSingleVariable("Assets sum").getValue();
+
+        assertEquals(new Amount(Currency.USD, new BigDecimal("431749.17")), result);
+    }
+
+    @Test
+    public void simulate_v02() throws IOException {
+
+        final var model = NetAssetValueCalculator.class.getResourceAsStream("/snapshots/nav_v0.2.json").readAllBytes();
+        final var snapshot = NavComputationContext.environment.fromJson(model);
+        final var recalculated = NavComputationContext.environment.compute(snapshot);
+
+        final var btcPriceId = recalculated.findSingleVariable("BTC/USD rate").getVariableTrack().getId();
+        final var ethPriceId = recalculated.findSingleVariable("ETH/USD rate").getVariableTrack().getId();
+        final var usdcPriceId = recalculated.findSingleVariable("USDC/USD rate").getVariableTrack().getId();
+        final var btcGrowSimulation = NavComputationContext.environment.copyWith(
+                snapshot,
+                descriptor("Nav with updated prices"),
+                Map.of(btcPriceId, new ValueWithDescriptor(
+                                descriptor("BTC/USD rate", Meta.of("origin", "Simulation")),
+                                new Rate(Currency.BTC, Currency.USD, new BigDecimal("72313.2"))),
+                        ethPriceId, new ValueWithDescriptor(
+                                descriptor("ETH/USD rate", Meta.of("origin", "Simulation")),
+                                new Rate(Currency.ETH, Currency.USD, new BigDecimal("2193.31"))),
+                        usdcPriceId, new ValueWithDescriptor(
+                                descriptor("USDC/USD rate", Meta.of("origin", "Simulation")),
+                                new Rate(Currency.USDC, Currency.USD, new BigDecimal("1.0")))
+                ));
 
         //simulate
         final var simulation = NavComputationContext.environment.compute(btcGrowSimulation);

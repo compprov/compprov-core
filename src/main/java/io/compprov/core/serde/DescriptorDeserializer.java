@@ -8,9 +8,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import io.compprov.core.meta.Descriptor;
 import io.compprov.core.meta.Meta;
+import io.compprov.core.meta.Pair;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class DescriptorDeserializer extends StdDeserializer<Descriptor> {
 
@@ -26,11 +29,24 @@ public class DescriptorDeserializer extends StdDeserializer<Descriptor> {
 
         String name = node.get("name").asText();
         JsonNode metaNode = node.get("meta");
-        LinkedHashMap<String, Object> metaMap = mapper.convertValue(
-                metaNode,
-                new TypeReference<LinkedHashMap<String, Object>>() {
-                }
-        );
+        LinkedHashMap<String, Object> metaMap;
+        if (metaNode.isArray()) {
+            //to preserve order in JSON
+            List<Pair> metaList = mapper.convertValue(
+                    metaNode,
+                    new TypeReference<ArrayList<Pair>>() {
+                    }
+            );
+            metaMap = new LinkedHashMap<>();
+            metaList.forEach(pair -> metaMap.put(pair.key(), pair.value()));
+        } else {
+            //backward compatibility
+            metaMap = mapper.convertValue(
+                    metaNode,
+                    new TypeReference<LinkedHashMap<String, Object>>() {
+                    }
+            );
+        }
         return new Descriptor(name, new Meta(metaMap));
     }
 }

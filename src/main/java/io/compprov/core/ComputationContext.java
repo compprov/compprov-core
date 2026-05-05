@@ -148,7 +148,7 @@ public class ComputationContext {
     private WrappedVariable executeSnapshotOperation(Snapshot.Operation operation) {
         Objects.requireNonNull(operation, "operation");
 
-        final var arguments = operation.arguments().values().stream().map(id -> data.variables.get(id)).toList();
+        final var arguments = operation.arguments().stream().map(pair -> data.variables.get(pair.value())).toList();
 
         final var started = environment.clock.instant().atZone(environment.zoneId);
         final var caller = arguments.get(0);
@@ -160,6 +160,10 @@ public class ComputationContext {
         final var oldResult = data.variables.get(operation.resultId());
         final var reWrappedResult = wrapSnapshotVariable(new Snapshot.Variable(oldResult.getVariableTrack(), newResultValue));
 
+        final var argumentsMap = new LinkedHashMap<String, String>();
+        operation.arguments()
+                .stream()
+                .forEach(argument -> argumentsMap.put(argument.key(), (String) argument.value()));
         final var wrappedOperation = operation(
                 new OperationTrack(
                         operation.track().getNumericId(),
@@ -167,7 +171,7 @@ public class ComputationContext {
                         finished,
                         operation.track().getDescriptor(),
                         newResultValue.getClass().getName()),
-                operation.arguments(),
+                argumentsMap,
                 reWrappedResult.getVariableTrack().getId());
         data.operations.put(wrappedOperation.getOperationTrack().getId(), wrappedOperation);
         data.operationCounter.set(wrappedOperation.getOperationTrack().getNumericId());

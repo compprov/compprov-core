@@ -1,6 +1,7 @@
 package io.compprov.core;
 
 import io.compprov.core.meta.Descriptor;
+import io.compprov.core.meta.Pair;
 import io.compprov.core.operation.OperationTrack;
 import io.compprov.core.variable.VariableTrack;
 
@@ -20,7 +21,7 @@ public record Snapshot(Descriptor descriptor,
         }
     }
 
-    public record Operation(OperationTrack track, LinkedHashMap<String, String> arguments, String resultId) {
+    public record Operation(OperationTrack track, List<Pair> arguments, String resultId) {
         public Operation {
             track = Objects.requireNonNull(track);
             arguments = Objects.requireNonNull(arguments);

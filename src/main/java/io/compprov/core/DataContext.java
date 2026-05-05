@@ -1,6 +1,7 @@
 package io.compprov.core;
 
 import io.compprov.core.meta.Descriptor;
+import io.compprov.core.meta.Pair;
 import io.compprov.core.operation.WrappedOperation;
 import io.compprov.core.variable.WrappedVariable;
 
@@ -31,7 +32,12 @@ public class DataContext {
         List<Snapshot.Operation> operationsList = operations.values()
                 .stream()
                 .sorted(Comparator.comparing(it -> it.getOperationTrack().getNumericId()))
-                .map(it -> new Snapshot.Operation(it.getOperationTrack(), it.getArguments(), it.getResultId()))
+                .map(it -> new Snapshot.Operation(it.getOperationTrack(),
+                        it.getArguments().entrySet()
+                                .stream()
+                                .map(entry -> new Pair(entry.getKey(), entry.getValue()))
+                                .toList(),
+                        it.getResultId()))
                 .toList();
 
         return new Snapshot(contextDescriptor, variablesList, operationsList);

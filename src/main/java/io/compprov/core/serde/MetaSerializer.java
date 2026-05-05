@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import io.compprov.core.meta.Meta;
+import io.compprov.core.meta.Pair;
 
 import java.io.IOException;
 
@@ -19,6 +20,9 @@ public class MetaSerializer extends StdSerializer<Meta> {
 
     @Override
     public void serialize(Meta value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeObject(value.getParameters());
+        gen.writeObject(value.getParameters().entrySet()
+                .stream()
+                .map(entry -> new Pair(entry.getKey(), entry.getValue()))
+                .toList());
     }
 }
