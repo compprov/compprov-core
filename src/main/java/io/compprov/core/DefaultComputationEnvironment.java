@@ -48,7 +48,7 @@ public class DefaultComputationEnvironment extends ComputationEnvironment {
         module.addDeserializer(MathContext.class, new MathContextDeserializer());
         module.addDeserializer(Descriptor.class, new DescriptorDeserializer());
         module.addDeserializer(VariableTrack.class, new VariableTrackDeserializer());
-        module.addDeserializer(Snapshot.Variable.class, new VariableDeserializer());
+        module.addDeserializer(Snapshot.Variable.class, new VariableDeserializer(wrappers));
         module.addDeserializer(Snapshot.Operation.class, new OperationDeserializer());
         mapper.configOverride(BigDecimal.class).setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING));
         mapper.configOverride(BigInteger.class).setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING));

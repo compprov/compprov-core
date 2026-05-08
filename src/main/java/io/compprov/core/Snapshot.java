@@ -33,6 +33,7 @@ public record Snapshot(Descriptor descriptor,
     }
 
     public Snapshot {
+        descriptor = Objects.requireNonNull(descriptor);
         variables = List.copyOf(Objects.requireNonNull(variables));
         operations = List.copyOf(Objects.requireNonNull(operations));
     }

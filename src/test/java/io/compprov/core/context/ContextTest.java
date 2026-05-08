@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ContextTest {
 
-    private static DefaultComputationEnvironment environment = new DefaultComputationEnvironment();
+    private static final DefaultComputationEnvironment environment = new DefaultComputationEnvironment();
 
     private WrappedMathContext mc(DefaultComputationContext ctx, int precision, RoundingMode rm) {
         return ctx.wrapMathContext(new MathContext(precision, rm), Descriptor.descriptor("mc"));

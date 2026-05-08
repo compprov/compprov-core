@@ -13,7 +13,7 @@ public class WrappedOperation {
                             LinkedHashMap<String, String> arguments, String resultId) {
         this.operationTrack = Objects.requireNonNull(operationTrack);
         this.arguments = new LinkedHashMap<>();
-        Objects.requireNonNull(arguments).forEach((k, v) -> this.arguments.put(k, v));
+        this.arguments.putAll(arguments);
         this.resultId = Objects.requireNonNull(resultId);
         if (arguments.isEmpty()) {
             throw new IllegalArgumentException("Operation must contain at least one argument");
@@ -38,7 +38,7 @@ public class WrappedOperation {
      */
     public LinkedHashMap<String, String> getArguments() {
         final var result = new LinkedHashMap<String, String>();
-        arguments.forEach((k, v) -> result.put(k, v));
+        result.putAll(arguments);
         return result;
     }
 

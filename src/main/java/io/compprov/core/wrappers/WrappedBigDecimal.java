@@ -40,7 +40,7 @@ public final class WrappedBigDecimal extends AbstractWrappedVariable<BigDecimal>
     private static final Descriptor OP_MAX = Descriptor.descriptor("max", formula("max(a,b)"));
     private static final Descriptor OP_MIN = Descriptor.descriptor("min", formula("min(a,b)"));
     private static final Descriptor OP_ADD_BULK = Descriptor.descriptor("addBulk", formula("(a+b0+...+bn)mc"));
-    private static final Descriptor OP_SUBTRACT_BULK = Descriptor.descriptor("addBulk", formula("(a-b0-...-bn)mc"));
+    private static final Descriptor OP_SUBTRACT_BULK = Descriptor.descriptor("subtractBulk", formula("(a-b0-...-bn)mc"));
     private static final Descriptor OP_MULTIPLY_BULK = Descriptor.descriptor("multiplyBulk", formula("(a*b0*...*bn)mc"));
     private static final Descriptor OP_MAX_BULK = Descriptor.descriptor("maxBulk", formula("max(a,b0,...,bn)"));
     private static final Descriptor OP_MIN_BULK = Descriptor.descriptor("minBulk", formula("min(a,b0,...,bn)"));
@@ -479,6 +479,7 @@ public final class WrappedBigDecimal extends AbstractWrappedVariable<BigDecimal>
     public WrappedBigDecimal maxBulk(List<WrappedBigDecimal> values, Descriptor resultDescriptor) {
         Objects.requireNonNull(values, "values");
         LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
+        arguments.put("a", this);
         for (int i = 0; i < values.size(); i++) {
             arguments.put("b" + i, values.get(i));
         }
@@ -488,20 +489,21 @@ public final class WrappedBigDecimal extends AbstractWrappedVariable<BigDecimal>
     public WrappedBigDecimal minBulk(List<WrappedBigDecimal> values, Descriptor resultDescriptor) {
         Objects.requireNonNull(values, "values");
         LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
+        arguments.put("a", this);
         for (int i = 0; i < values.size(); i++) {
             arguments.put("b" + i, values.get(i));
         }
         return (WrappedBigDecimal) execute(OP_MIN_BULK, arguments, resultDescriptor);
     }
 
-    public WrappedBigDecimal ln_double(Descriptor resultDescriptor) {
+    public WrappedBigDecimal lnDouble(Descriptor resultDescriptor) {
         return (WrappedBigDecimal) execute(
                 OP_LN_DOUBLE,
                 "a", this,
                 resultDescriptor);
     }
 
-    public WrappedBigDecimal exp_double(Descriptor resultDescriptor) {
+    public WrappedBigDecimal expDouble(Descriptor resultDescriptor) {
         return (WrappedBigDecimal) execute(
                 OP_EXP_DOUBLE,
                 "a", this,

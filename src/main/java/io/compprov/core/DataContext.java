@@ -11,6 +11,16 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Holds the mutable state of a computation: the variable and operation stores,
+ * and their numeric counters.
+ *
+ * <p>The maps and counters are intentionally {@code protected} so that
+ * {@link ComputationContext} and its subclasses can read and write them directly
+ * for performance. Any class that extends {@code DataContext} or
+ * {@code ComputationContext} takes on responsibility for maintaining consistency
+ * between the two stores.</p>
+ */
 public class DataContext {
     protected final AtomicInteger variableCounter = new AtomicInteger(0);
     protected final AtomicInteger operationCounter = new AtomicInteger(0);

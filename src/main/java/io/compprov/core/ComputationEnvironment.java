@@ -126,7 +126,7 @@ public class ComputationEnvironment {
                     stringBuilder.append(operation.track().getDescriptor().getMeta().first());
 
                     //mapping through the variable id
-                    stringBuilder.append("\r\n\t");
+                    stringBuilder.append("\n\t");
                     stringBuilder.append(writeValueSingleString(
                             operation.arguments()
                                     .stream()
@@ -139,7 +139,7 @@ public class ComputationEnvironment {
                     stringBuilder.append(operation.resultId());
 
                     //mapping through the variable name
-                    stringBuilder.append("\r\n\t");
+                    stringBuilder.append("\n\t");
                     stringBuilder.append(writeValueSingleString(
                             operation.arguments()
                                     .stream()
@@ -152,7 +152,7 @@ public class ComputationEnvironment {
                     stringBuilder.append(variableMap.get(operation.resultId()).track().getDescriptor().getName());
 
                     //mapping through the variable value
-                    stringBuilder.append("\r\n\t");
+                    stringBuilder.append("\n\t");
                     stringBuilder.append(writeValueSingleString(
                             operation.arguments()
                                     .stream()
@@ -163,7 +163,7 @@ public class ComputationEnvironment {
                     ));
                     stringBuilder.append("->");
                     stringBuilder.append(variableMap.get(operation.resultId()).value());
-                    stringBuilder.append("\r\n");
+                    stringBuilder.append("\n");
                 });
         return stringBuilder.toString();
     }

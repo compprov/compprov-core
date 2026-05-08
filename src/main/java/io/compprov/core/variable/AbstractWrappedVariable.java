@@ -48,10 +48,10 @@ public abstract class AbstractWrappedVariable<T> implements WrappedVariable<T> {
     protected WrappedVariable execute(Descriptor opDescriptor,
                                       String argument1Name, WrappedVariable argument1,
                                       Descriptor resultDescriptor) {
+        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
+        arguments.put(argument1Name, argument1);
         return getContext().executeOperation(
-                new LinkedHashMap<String, WrappedVariable>() {{
-                    put(argument1Name, argument1);
-                }},
+                arguments,
                 opDescriptor,
                 resultDescriptor);
     }
@@ -60,10 +60,9 @@ public abstract class AbstractWrappedVariable<T> implements WrappedVariable<T> {
                                       String argument1Name, WrappedVariable argument1,
                                       String argument2Name, WrappedVariable argument2,
                                       Descriptor resultDescriptor) {
-        final var arguments = new LinkedHashMap<String, WrappedVariable>() {{
-            put(argument1Name, argument1);
-            put(argument2Name, argument2);
-        }};
+        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
+        arguments.put(argument1Name, argument1);
+        arguments.put(argument2Name, argument2);
         if (arguments.size() != 2) {
             throw new IllegalArgumentException("Argument names must be unique");
         }
@@ -78,11 +77,10 @@ public abstract class AbstractWrappedVariable<T> implements WrappedVariable<T> {
                                       String argument2Name, WrappedVariable argument2,
                                       String argument3Name, WrappedVariable argument3,
                                       Descriptor resultDescriptor) {
-        final var arguments = new LinkedHashMap<String, WrappedVariable>() {{
-            put(argument1Name, argument1);
-            put(argument2Name, argument2);
-            put(argument3Name, argument3);
-        }};
+        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
+        arguments.put(argument1Name, argument1);
+        arguments.put(argument2Name, argument2);
+        arguments.put(argument3Name, argument3);
         if (arguments.size() != 3) {
             throw new IllegalArgumentException("Argument names must be unique");
         }
@@ -99,12 +97,11 @@ public abstract class AbstractWrappedVariable<T> implements WrappedVariable<T> {
                                       String argument4Name, WrappedVariable argument4,
                                       Descriptor resultDescriptor) {
 
-        final var arguments = new LinkedHashMap<String, WrappedVariable>() {{
-            put(argument1Name, argument1);
-            put(argument2Name, argument2);
-            put(argument3Name, argument3);
-            put(argument4Name, argument4);
-        }};
+        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
+        arguments.put(argument1Name, argument1);
+        arguments.put(argument2Name, argument2);
+        arguments.put(argument3Name, argument3);
+        arguments.put(argument4Name, argument4);
         if (arguments.size() != 4) {
             throw new IllegalArgumentException("Argument names must be unique");
         }
