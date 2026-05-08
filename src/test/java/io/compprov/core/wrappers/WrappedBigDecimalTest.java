@@ -419,7 +419,7 @@ public class WrappedBigDecimalTest {
 
     @Test
     void maxBulk_with_negative_values() {
-        var a = wrap("1", "a");
+        var a = wrap("-5", "a");
         var b = wrap("-3", "b");
         var c = wrap("-1", "c");
         var d = wrap("-7", "d");
@@ -436,7 +436,7 @@ public class WrappedBigDecimalTest {
         var d = wrap("4", "d");
         a.maxBulk(List.of(b, c, d), null);
 
-        assertEquals(3, ctx.snapshot().operations().get(0).arguments().size());
+        assertEquals(4, ctx.snapshot().operations().get(0).arguments().size());
     }
 
     @Test
@@ -449,7 +449,7 @@ public class WrappedBigDecimalTest {
 
     @Test
     void minBulk_returns_smallest_value() {
-        var a = wrap("1", "a");
+        var a = wrap("5", "a");
         var b = wrap("7.5", "b");
         var c = wrap("3.1", "c");
         var d = wrap("9.9", "d");
@@ -487,7 +487,7 @@ public class WrappedBigDecimalTest {
         var d = wrap("30", "d");
         a.minBulk(List.of(b, c, d), null);
 
-        assertEquals(3, ctx.snapshot().operations().get(0).arguments().size());
+        assertEquals(4, ctx.snapshot().operations().get(0).arguments().size());
     }
 
     @Test

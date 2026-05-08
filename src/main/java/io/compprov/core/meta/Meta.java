@@ -8,16 +8,16 @@ import java.util.Objects;
  *
  * <p>Feel free to add static creators for this class that include all mandatory metadata for your environment</p>
  */
-public class Meta {
+public final class Meta {
 
     public static final Meta NO_META = new Meta(new LinkedHashMap<>());
 
-    protected final LinkedHashMap<String, Object> parameters;
+    private final LinkedHashMap<String, Object> parameters;
 
     public Meta(LinkedHashMap<String, Object> parameters) {
         Objects.requireNonNull(parameters, "parameters");
         this.parameters = new LinkedHashMap<>();
-        parameters.forEach((k, v) -> this.parameters.put(k, v));
+        this.parameters.putAll(parameters);
     }
 
     public static Meta formula(String formula) {
@@ -34,57 +34,40 @@ public class Meta {
     }
 
     public static Meta of(String k, Object v) {
-        return new Meta(new LinkedHashMap() {{
-            put(k, v);
-        }});
+        return new Meta(linkedMap(k, v));
     }
 
     public static Meta of(String k1, Object v1, String k2, Object v2) {
-        return new Meta(new LinkedHashMap() {{
-            put(k1, v1);
-            put(k2, v2);
-        }});
+        return new Meta(linkedMap(k1, v1, k2, v2));
     }
 
-
     public static Meta of(String k1, Object v1, String k2, Object v2, String k3, Object v3) {
-        return new Meta(new LinkedHashMap() {{
-            put(k1, v1);
-            put(k2, v2);
-            put(k3, v3);
-        }});
+        return new Meta(linkedMap(k1, v1, k2, v2, k3, v3));
     }
 
     public static Meta of(String k1, Object v1, String k2, Object v2, String k3, Object v3, String k4, Object v4) {
-        return new Meta(new LinkedHashMap() {{
-            put(k1, v1);
-            put(k2, v2);
-            put(k3, v3);
-            put(k4, v4);
-        }});
+        return new Meta(linkedMap(k1, v1, k2, v2, k3, v3, k4, v4));
     }
 
     public static Meta of(String k1, Object v1, String k2, Object v2, String k3, Object v3, String k4, Object v4,
                           String k5, Object v5) {
-        return new Meta(new LinkedHashMap() {{
-            put(k1, v1);
-            put(k2, v2);
-            put(k3, v3);
-            put(k4, v4);
-            put(k5, v5);
-        }});
+        return new Meta(linkedMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5));
     }
 
     public static Meta of(String k1, Object v1, String k2, Object v2, String k3, Object v3, String k4, Object v4,
                           String k5, Object v5, String k6, Object v6) {
-        return new Meta(new LinkedHashMap() {{
-            put(k1, v1);
-            put(k2, v2);
-            put(k3, v3);
-            put(k4, v4);
-            put(k5, v5);
-            put(k6, v6);
-        }});
+        return new Meta(linkedMap(k1, v1, k2, v2, k3, v3, k4, v4, k5, v5, k6, v6));
+    }
+
+    private static LinkedHashMap<String, Object> linkedMap(Object... pairs) {
+        if (pairs.length % 2 != 0) {
+            throw new IllegalArgumentException("pairs must contain an even number of elements (key/value)");
+        }
+        var m = new LinkedHashMap<String, Object>();
+        for (int i = 0; i < pairs.length; i += 2) {
+            m.put((String) pairs[i], pairs[i + 1]);
+        }
+        return m;
     }
 
     public String first() {
@@ -97,7 +80,7 @@ public class Meta {
 
     public LinkedHashMap<String, Object> getParameters() {
         final var result = new LinkedHashMap<String, Object>();
-        parameters.forEach(result::put);
+        result.putAll(parameters);
         return result;
     }
 

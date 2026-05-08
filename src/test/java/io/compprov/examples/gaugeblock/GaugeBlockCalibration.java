@@ -139,7 +139,7 @@ public class GaugeBlockCalibration {
                 .add(wTermB, mc, descriptor("A*T_K^2 + B*T_K"))
                 .add(wC,    mc, descriptor("A*T_K^2 + B*T_K + C"))
                 .add(wTermD, mc, descriptor("ln(svp): Wexler/Sonntag exponent"));
-        var svp = lnSvp.exp_double(
+        var svp = lnSvp.expDouble(
                 descriptor("svp: saturation vapor pressure (Wexler 1976), Pa"));
 
         // ── Step 1: wavenumber of the primary laser ───────────────────────────────

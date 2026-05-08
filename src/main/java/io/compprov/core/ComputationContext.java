@@ -70,6 +70,9 @@ public class ComputationContext {
         final var started = environment.clock.instant().atZone(environment.zoneId);
         final var caller = arguments.values().iterator().next();
         final var functionToCall = caller.getFunction(opDescriptor);
+        if (functionToCall == null) {
+            throw new IllegalStateException("No function registered for operation: " + opDescriptor.getName());
+        }
         final var result = functionToCall.apply(arguments.values().stream().map(WrappedVariable::getValue).toList());
         final var finished = environment.clock.instant().atZone(environment.zoneId);
 
@@ -128,7 +131,7 @@ public class ComputationContext {
 
         VariableWrapper wrapper = environment.wrappers.get(variable.value().getClass());
         if (wrapper == null) {
-            throw new NullPointerException("Wrapper for %s is not found".formatted(variable.value().getClass()));
+            throw new IllegalStateException("Wrapper for %s is not found".formatted(variable.value().getClass()));
         }
 
         final var createdAt = variable.track().getKind() == VariableKind.INPUT
@@ -152,7 +155,11 @@ public class ComputationContext {
 
         final var started = environment.clock.instant().atZone(environment.zoneId);
         final var caller = arguments.get(0);
-        final var functionToCall = caller.getFunction(operation.track().getDescriptor());
+        final var opDescriptor = operation.track().getDescriptor();
+        final var functionToCall = caller.getFunction(opDescriptor);
+        if (functionToCall == null) {
+            throw new IllegalStateException("No function registered for operation: " + opDescriptor.getName());
+        }
         final var newResultValue = functionToCall.apply(arguments.stream().map(WrappedVariable::getValue).toList());
         final var finished = environment.clock.instant().atZone(environment.zoneId);
 
@@ -161,15 +168,13 @@ public class ComputationContext {
         final var reWrappedResult = wrapSnapshotVariable(new Snapshot.Variable(oldResult.getVariableTrack(), newResultValue));
 
         final var argumentsMap = new LinkedHashMap<String, String>();
-        operation.arguments()
-                .stream()
-                .forEach(argument -> argumentsMap.put(argument.key(), (String) argument.value()));
+        operation.arguments().forEach(argument -> argumentsMap.put(argument.key(), (String) argument.value()));
         final var wrappedOperation = operation(
                 new OperationTrack(
                         operation.track().getNumericId(),
                         started,
                         finished,
-                        operation.track().getDescriptor(),
+                        opDescriptor,
                         newResultValue.getClass().getName()),
                 argumentsMap,
                 reWrappedResult.getVariableTrack().getId());

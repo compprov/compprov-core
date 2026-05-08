@@ -20,7 +20,7 @@ import java.util.List;
 public class OperationDeserializer extends StdDeserializer<Snapshot.Operation> {
 
     public OperationDeserializer() {
-        super(Snapshot.Variable.class);
+        super(Snapshot.Operation.class);
     }
 
     @Override
