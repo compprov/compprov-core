@@ -15,18 +15,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Holds the mutable state of a computation: the variable and operation stores,
  * and their numeric counters.
  *
- * <p>The maps and counters are intentionally {@code protected} so that
- * {@link ComputationContext} and its subclasses can read and write them directly
- * for performance. Any class that extends {@code DataContext} or
+ * <p>{@link ComputationContext} and its subclasses can read and write fields directly
+ * for performance ans simplicity. Any class that extends {@code DataContext} or
  * {@code ComputationContext} takes on responsibility for maintaining consistency
  * between the two stores.</p>
  */
 public class DataContext {
-    protected final AtomicInteger variableCounter = new AtomicInteger(0);
-    protected final AtomicInteger operationCounter = new AtomicInteger(0);
-    protected final ConcurrentHashMap<String, WrappedVariable> variables = new ConcurrentHashMap<>();
-    protected final ConcurrentHashMap<String, WrappedOperation> operations = new ConcurrentHashMap<>();
-    protected final Descriptor contextDescriptor;
+    public final AtomicInteger variableCounter = new AtomicInteger(0);
+    public final AtomicInteger operationCounter = new AtomicInteger(0);
+    public final ConcurrentHashMap<String, WrappedVariable> variables = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<String, WrappedOperation> operations = new ConcurrentHashMap<>();
+    public final Descriptor contextDescriptor;
 
     public DataContext(Descriptor contextDescriptor) {
         this.contextDescriptor = Objects.requireNonNull(contextDescriptor);
@@ -53,11 +52,11 @@ public class DataContext {
         return new Snapshot(contextDescriptor, variablesList, operationsList);
     }
 
-    protected int nextOperation() {
+    public int nextOperation() {
         return operationCounter.incrementAndGet();
     }
 
-    protected int nextVariable() {
+    public int nextVariable() {
         return variableCounter.incrementAndGet();
     }
 }
