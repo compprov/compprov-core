@@ -25,6 +25,7 @@ public class DataContext {
     public final AtomicInteger operationCounter = new AtomicInteger(0);
     public final ConcurrentHashMap<String, WrappedVariable> variables = new ConcurrentHashMap<>();
     public final ConcurrentHashMap<String, WrappedOperation> operations = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<String, WrappedOperation> producedBy = new ConcurrentHashMap<>();
     public final Descriptor contextDescriptor;
 
     public DataContext(Descriptor contextDescriptor) {
