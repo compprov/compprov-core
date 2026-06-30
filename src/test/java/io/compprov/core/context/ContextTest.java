@@ -65,6 +65,7 @@ public class ContextTest {
         assertEquals("2", reproduced.getVariable("i_3").getValue().toString());
         assertEquals("3", reproduced.getVariable("o_4").getValue().toString());
         assertEquals("-2", reproduced.getVariable("o_5").getValue().toString());
+        assertEquals(reproduced.producedBy("o_5").getResultId(), "o_5");
 
         //updated
         final var updated = context.getEnvironment().copyWith(

@@ -424,8 +424,10 @@ public class WrappedBigDecimalTest {
         var c = wrap("-1", "c");
         var d = wrap("-7", "d");
         var result = a.maxBulk(List.of(b, c, d), null);
+        var operation = ctx.producedBy(result.getVariableTrack().getId());
 
         assertValue(result, "-1");
+        assertEquals(operation.getResultId(), result.getVariableTrack().getId());
     }
 
     @Test

@@ -92,6 +92,7 @@ public class ComputationContext {
                 mappingArguments,
                 wrappedResult.getVariableTrack().getId());
         data.operations.put(wrappedOperation.getOperationTrack().getId(), wrappedOperation);
+        data.producedBy.put(wrappedResult.getVariableTrack().getId(), wrappedOperation);
 
         return wrappedResult;
     }
@@ -180,6 +181,7 @@ public class ComputationContext {
                 reWrappedResult.getVariableTrack().getId());
         data.operations.put(wrappedOperation.getOperationTrack().getId(), wrappedOperation);
         data.operationCounter.set(wrappedOperation.getOperationTrack().getNumericId());
+        data.producedBy.put(reWrappedResult.getVariableTrack().getId(), wrappedOperation);
 
         return reWrappedResult;
     }
@@ -220,7 +222,10 @@ public class ComputationContext {
         return findVariables(it -> it.getVariableTrack().getDescriptor().getName().equals(name));
     }
 
-    public WrappedOperation getOperation(String id) {
-        return data.operations.get(id);
+    public WrappedOperation getOperation(String operationId) {
+        return data.operations.get(operationId);
+    }
+    public WrappedOperation producedBy(String variableId) {
+        return data.producedBy.get(variableId);
     }
 }
