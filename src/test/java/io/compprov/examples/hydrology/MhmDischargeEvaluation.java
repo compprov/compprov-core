@@ -48,7 +48,7 @@ public class MhmDischargeEvaluation {
 
     private static final LocalDate startDate = LocalDate.of(1991, 1, 1);
 
-    private static final ComputationEnvironment ENVIRONMENT = new DefaultComputationEnvironment();
+    private static final ComputationEnvironment ENVIRONMENT = DefaultComputationEnvironment.create();
 
     @Test
     public void evaluateSimulation00() {

@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class WrappedBigIntegerTest {
 
-    private static DefaultComputationEnvironment environment = new DefaultComputationEnvironment();
+    private static final DefaultComputationEnvironment environment = DefaultComputationEnvironment.create();
     private DefaultComputationContext ctx;
 
     @BeforeEach
@@ -31,10 +31,6 @@ public class WrappedBigIntegerTest {
 
     private WrappedBigInteger wrap(long value, String name) {
         return ctx.wrapBigInteger(BigInteger.valueOf(value), Descriptor.descriptor(name));
-    }
-
-    private WrappedBigInteger wrap(String value, String name) {
-        return ctx.wrapBigInteger(new BigInteger(value), Descriptor.descriptor(name));
     }
 
     private WrappedInteger wrapInt(int value) {
@@ -388,9 +384,9 @@ public class WrappedBigIntegerTest {
 
         var record = ctx.snapshot();
         assertTrue(record.variables().stream().map(v -> v.track().getId())
-                .filter(id -> id.equals(a.getVariableTrack().getId())).findFirst().isPresent());
+                .anyMatch(id -> id.equals(a.getVariableTrack().getId())));
         assertTrue(record.variables().stream().map(v -> v.track().getId())
-                .filter(id -> id.equals(b.getVariableTrack().getId())).findFirst().isPresent());
+                .anyMatch(id -> id.equals(b.getVariableTrack().getId())));
     }
 
     @Test

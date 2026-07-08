@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.compprov.core.meta.Descriptor;
 import io.compprov.core.variable.ValueWithDescriptor;
+import io.compprov.core.variable.VariableKind;
 import io.compprov.core.variable.VariableTrack;
 import io.compprov.core.variable.VariableWrapper;
 
@@ -100,6 +101,9 @@ public class ComputationEnvironment {
             if (update == null) {
                 variables.add(variable);
             } else {
+                if (variable.track().getKind() != VariableKind.INPUT) {
+                    throw new IllegalArgumentException("Cannot substitute non-INPUT variable: " + variable.track().getId());
+                }
                 variables.add(new Snapshot.Variable(
                         new VariableTrack(
                                 variable.track().getNumericId(),

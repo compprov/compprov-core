@@ -127,7 +127,7 @@ public class ComputationContext {
         return wrapped;
     }
 
-    private <T> WrappedVariable wrapSnapshotVariable(Snapshot.Variable variable) {
+    private WrappedVariable wrapSnapshotVariable(Snapshot.Variable variable) {
         Objects.requireNonNull(variable, "variable");
 
         VariableWrapper wrapper = environment.wrappers.get(variable.value().getClass());
@@ -222,9 +222,14 @@ public class ComputationContext {
         return findVariables(it -> it.getVariableTrack().getDescriptor().getName().equals(name));
     }
 
+    public Descriptor descriptor() {
+        return data.contextDescriptor;
+    }
+
     public WrappedOperation getOperation(String operationId) {
         return data.operations.get(operationId);
     }
+
     public WrappedOperation producedBy(String variableId) {
         return data.producedBy.get(variableId);
     }

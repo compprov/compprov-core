@@ -13,6 +13,7 @@ output was derived from its inputs.
 - [Getting started](#getting-started)
 - [Usage example](#usage-example)
 - [Snapshot: export, replay, and diff](#snapshot-export-replay-and-diff)
+- [Subgraph folding: scaling cyclic computations](#subgraph-folding-scaling-cyclic-computations)
 - [Extending with custom type wrappers](#extending-with-custom-type-wrappers)
 - [Built-in types](#built-in-types)
 - [Thread safety](#thread-safety)
@@ -65,7 +66,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 
 // --- 1. Create the environment (thread-safe; reuse across computations) ---
-var env = new DefaultComputationEnvironment();
+var env = DefaultComputationEnvironment.create();
 
 // --- 2. Create a context for this computation run ---
 var ctx = new DefaultComputationContext(
@@ -163,6 +164,122 @@ var updated = env.compute(modified);
 
 ---
 
+## Subgraph folding: scaling cyclic computations
+
+A CPG that faithfully records every operation is what makes compprov useful for auditing —
+but for cyclic algorithms (Monte Carlo simulations, iterative solvers, time-series walks)
+that repeat the *same* computation shape thousands or millions of times, that fidelity has
+a cost: every iteration adds its own operations and intermediate variables to the graph, so
+both live heap usage and exported snapshot size grow with iteration count **times** the
+number of tracked steps per iteration.
+
+**Subgraph folding** (implemented as `Subgraph` / `WrappedSubgraph`, referred to as
+"fragmentation" in commit history — see [naming](#a-note-on-naming) below) addresses this:
+define the repeated step once as a reusable template, then replay it per cycle as a single
+opaque operation instead of re-recording its internal steps every time.
+
+### Why it matters
+
+`io.compprov.examples.pi.PiCalculationStress` benchmarks a Monte Carlo Pi estimator (5
+tracked operations per sampled point: `pow`, `pow`, `add`, `setScale`, `subtract`) with and
+without folding. At 250,000 points, the exported JSON snapshot for the un-folded run was
+**1.6 GB**; the folded run produced an identical calculation in **628 MB** — about **2.5x
+smaller** — because each iteration contributes one `execute` operation and one result
+variable to the graph instead of five of each. The saving scales with the number of steps
+captured in the template: a repeated step with 20 internal operations would save roughly
+20x per iteration instead of 5x.
+
+The same reduction applies to memory while the computation is running: `ComputationContext`
+keeps every recorded variable and operation in memory until `snapshot()` is called, so fewer
+recorded nodes per cycle means a smaller live heap footprint, not just a smaller export.
+
+### How it works
+
+1. **Build the template once**, normally, in its own disposable `ComputationContext`. This
+   produces a small, self-contained CPG for a single execution of the repeated step.
+2. **Capture it as a `Subgraph`**: `new Subgraph(templateCtx, argumentIds, resultId)` records
+   which of the template's variable ids are inputs and which one is the output.
+3. **Wrap it once** in the context that drives the cycle: `ctx.wrapSubgraph(subgraph,
+   descriptor)`. This adds exactly one variable to the outer CPG, no matter how many times
+   it's later invoked.
+4. **Execute it per cycle**: `subgraphVar.execute(List.of(arg1, arg2, ...), resultDescriptor)`.
+   Internally this replays the template's function chain against the new argument values
+   entirely in memory — no new tracking metadata is created for the internal steps. Only the
+   outer `execute` call is recorded in `ctx`, as one operation producing one result variable.
+
+```java
+var env = DefaultComputationEnvironment.create();
+
+// 1. Build the repeated step ONCE, in its own throwaway context.
+var templateCtx = new DefaultComputationContext(env,
+        new DataContext(Descriptor.descriptor("Pi calculation step with x,y points")));
+
+var x   = templateCtx.wrapBigDecimal(BigDecimal.ZERO, Descriptor.descriptor("x"));
+var y   = templateCtx.wrapBigDecimal(BigDecimal.ZERO, Descriptor.descriptor("y"));
+var mc  = templateCtx.wrapMathContext(MathContext.DECIMAL128, Descriptor.descriptor("computation precision"));
+var rmc = templateCtx.wrapMathContext(new MathContext(0, RoundingMode.DOWN), Descriptor.descriptor("0/1 math-context"));
+var one = templateCtx.wrapBigDecimal(BigDecimal.ONE, Descriptor.descriptor("constant 1"));
+var two = templateCtx.wrapInteger(2, Descriptor.descriptor("constant 2 integer"));
+
+var xSquared  = x.pow(two, mc, Descriptor.descriptor("x^2"));
+var ySquared  = y.pow(two, mc, Descriptor.descriptor("y^2"));
+var dist      = xSquared.add(ySquared, mc, Descriptor.descriptor("x^2 + y^2"));
+var distRound = dist.setScale(rmc, Descriptor.descriptor("0/1 distance"));
+var inCircle  = one.subtract(distRound, mc, Descriptor.descriptor("inCircle"));
+
+// 2. Capture it as a reusable Subgraph: declare which variables are inputs (by id)
+//    and which one is the result.
+var ctx = new DefaultComputationContext(env,
+        new DataContext(Descriptor.descriptor("Pi calculation with 100000 points")));
+
+var piStep = ctx.wrapSubgraph(
+        new Subgraph(
+                templateCtx,
+                List.of(x.getVariableTrack().getId(), y.getVariableTrack().getId()),
+                inCircle.getVariableTrack().getId()),
+        Descriptor.descriptor("Pi calculation step"));
+
+// 3. Drive the cycle. Each call replays the 5-step template in memory and records
+//    exactly ONE "execute" operation + ONE result variable in `ctx` — not the five
+//    operations and five intermediates the un-folded version would add per iteration.
+var counter = ctx.wrapBigDecimal(BigDecimal.ZERO, Descriptor.descriptor("initial counter"));
+for (long i = 0; i < totalPoints; i++) {
+    var xi = ctx.wrapBigDecimal(BigDecimal.valueOf(random.nextDouble()), Descriptor.descriptor("x_" + i));
+    var yi = ctx.wrapBigDecimal(BigDecimal.valueOf(random.nextDouble()), Descriptor.descriptor("y_" + i));
+    var inCircleI = (WrappedBigDecimal) piStep.execute(List.of(xi, yi), Descriptor.descriptor("inCircle_" + i));
+    counter = counter.add(inCircleI, mc, Descriptor.descriptor("counter_" + i));
+}
+```
+
+See the full runnable version in `io.compprov.examples.pi.PiCalculator` (`calculate()`), and
+the side-by-side benchmark in `io.compprov.examples.pi.PiCalculationStress`.
+
+### Trade-off: audit granularity
+
+Because the template's internal steps aren't re-recorded on every call, folding trades some
+audit granularity for scale: the outer CPG shows *that* `execute` was called with
+`(x_4237, y_4237)` and produced `inCircle_4237`, but not that call's intermediate `x²`, `y²`,
+or rounded distance — those only exist, generically, in the template's own one-time
+snapshot (`templateCtx.snapshot()`). Reach for folding for the repeated inner step of a
+cyclic algorithm where per-iteration micro-steps aren't independently interesting; keep
+normal tracking for anything where every intermediate value must be individually auditable.
+
+Also note that `WrappedSubgraph.execute` synchronizes internally on the `Subgraph` instance,
+so concurrent calls against the *same* fragment are serialized — give each parallel worker
+its own `Subgraph` instance (built from the same template context) if you need parallel
+throughput through the fold.
+
+### A note on naming
+
+This feature is called "fragmentation" in the codebase and commit history, but that name
+describes the opposite of what happens at read time — nothing is broken apart; a repeated
+computation is captured once and its repetitions are *collapsed* into single nodes. Names
+that better match the mechanism: **subgraph folding**, **cycle folding**, or **template
+subgraphs**. This README uses "subgraph folding" going forward; the class names
+(`Subgraph`, `WrappedSubgraph`, `wrapSubgraph`) are unaffected either way.
+
+---
+
 ## Extending with custom type wrappers
 
 Adding support for a type not built into the framework requires three things:
@@ -247,7 +364,7 @@ public final class LongWrapperFactory implements VariableWrapper<Long> {
 ### Step 3 — Register and use
 
 ```java
-var env = new DefaultComputationEnvironment();
+var env = DefaultComputationEnvironment.create();
 env.registerWrapper(Long.class, new LongWrapperFactory());
 
 var ctx = new DefaultComputationContext(env,

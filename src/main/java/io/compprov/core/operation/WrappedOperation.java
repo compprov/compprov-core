@@ -1,5 +1,8 @@
 package io.compprov.core.operation;
 
+import io.compprov.core.Snapshot;
+import io.compprov.core.meta.Pair;
+
 import java.util.LinkedHashMap;
 import java.util.Objects;
 
@@ -44,5 +47,14 @@ public class WrappedOperation {
 
     public String getResultId() {
         return resultId;
+    }
+
+    public Snapshot.Operation snapshot() {
+        return new Snapshot.Operation(operationTrack,
+                arguments.entrySet()
+                        .stream()
+                        .map(entry -> new Pair(entry.getKey(), entry.getValue()))
+                        .toList(),
+                resultId);
     }
 }
