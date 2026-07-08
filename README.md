@@ -265,32 +265,50 @@ Adding support for a type not built into the framework requires three things:
 
 ### Step 1 — Create the wrapped class
 
+Below, `Amount` is a currency-aware value type (a `Currency` plus a `BigDecimal`) from a
+net-asset-value example: `add()` requires both amounts to share a currency, and `convert()`
+applies an FX `Rate`. Only `add` and `convert` are shown here — a real wrapper can expose as
+many operations as the underlying type needs (see `WrappedAmount` for the full version,
+including a variadic `addBulk`).
+
 ```java
 import io.compprov.core.ComputationContext;
 import io.compprov.core.meta.Descriptor;
 import io.compprov.core.variable.AbstractWrappedVariable;
 import io.compprov.core.variable.VariableTrack;
+import io.compprov.examples.nav.model.Amount;
+import io.compprov.examples.nav.model.Rate;
 
 import java.util.*;
 import java.util.function.Function;
 
-public final class WrappedLong extends AbstractWrappedVariable<Long> {
+import static io.compprov.core.meta.Meta.formula;
 
-    // Define one Descriptor constant per operation.
-    private static final Descriptor OP_ADD      = Descriptor.descriptor("add");
-    private static final Descriptor OP_MULTIPLY = Descriptor.descriptor("multiply");
+public class WrappedAmount extends AbstractWrappedVariable<Amount> {
+
+    // Define one Descriptor constant per operation; a formula makes the audit trail readable.
+    private static final Descriptor OP_ADD     = Descriptor.descriptor("add", formula("a+b"));
+    private static final Descriptor OP_CONVERT = Descriptor.descriptor("convert", formula("convert(a,r)"));
 
     // Map each Descriptor to a lambda that performs the actual computation.
     private static final Map<Descriptor, Function<List<Object>, Object>> FUNCTIONS;
 
     static {
         Map<Descriptor, Function<List<Object>, Object>> m = new HashMap<>();
-        m.put(OP_ADD,      args -> (Long) args.get(0) + (Long) args.get(1));
-        m.put(OP_MULTIPLY, args -> (Long) args.get(0) * (Long) args.get(1));
+        m.put(OP_ADD, args -> {
+            Amount a = (Amount) args.get(0);
+            Amount b = (Amount) args.get(1);
+            return a.add(b);
+        });
+        m.put(OP_CONVERT, args -> {
+            Amount a = (Amount) args.get(0);
+            Rate r = (Rate) args.get(1);
+            return a.convert(r);
+        });
         FUNCTIONS = Collections.unmodifiableMap(m);
     }
 
-    public WrappedLong(ComputationContext context, VariableTrack track, Long value) {
+    public WrappedAmount(ComputationContext context, VariableTrack track, Amount value) {
         super(context, track, value);
     }
 
@@ -302,20 +320,24 @@ public final class WrappedLong extends AbstractWrappedVariable<Long> {
     // --- Public API ---
     // Each operation comes in two overloads: with and without a result Descriptor.
 
-    public WrappedLong add(WrappedLong augend, Descriptor resultDescriptor) {
-        return (WrappedLong) execute(OP_ADD, "a", this, "b", augend, resultDescriptor);
+    public WrappedAmount add(WrappedAmount augend, Descriptor resultDescriptor) {
+        Objects.requireNonNull(augend, "augend");
+        return (WrappedAmount) execute(OP_ADD, "a", this, "b", augend, resultDescriptor);
     }
 
-    public WrappedLong add(WrappedLong augend) {
+    public WrappedAmount add(WrappedAmount augend) {
         return add(augend, null);
     }
 
-    public WrappedLong multiply(WrappedLong multiplicand, Descriptor resultDescriptor) {
-        return (WrappedLong) execute(OP_MULTIPLY, "a", this, "b", multiplicand, resultDescriptor);
+    // Note the mixed argument type: an Amount converted by a Rate — the framework tracks
+    // both as separate input variables, regardless of their concrete wrapped type.
+    public WrappedAmount convert(WrappedRate rate, Descriptor resultDescriptor) {
+        Objects.requireNonNull(rate, "rate");
+        return (WrappedAmount) execute(OP_CONVERT, "a", this, "r", rate, resultDescriptor);
     }
 
-    public WrappedLong multiply(WrappedLong multiplicand) {
-        return multiply(multiplicand, null);
+    public WrappedAmount convert(WrappedRate rate) {
+        return convert(rate, null);
     }
 }
 ```
@@ -327,41 +349,49 @@ import io.compprov.core.ComputationContext;
 import io.compprov.core.variable.VariableTrack;
 import io.compprov.core.variable.VariableWrapper;
 import io.compprov.core.variable.WrappedVariable;
+import io.compprov.examples.nav.model.Amount;
 
-public final class LongWrapperFactory implements VariableWrapper<Long> {
+public class AmountWrapper implements VariableWrapper<Amount> {
     @Override
-    public WrappedVariable wrap(ComputationContext context, VariableTrack track, Long value) {
-        return new WrappedLong(context, track, value);
+    public WrappedVariable wrap(ComputationContext context, VariableTrack track, Amount value) {
+        return new WrappedAmount(context, track, value);
     }
 }
 ```
 
 ### Step 3 — Register and use
 
+`Rate` is wrapped the same way (see `WrappedRate` / `RateWrapper`), so both sides of the
+conversion end up as tracked variables in the CPG.
+
 ```java
 var env = DefaultComputationEnvironment.create();
-env.registerWrapper(Long.class, new LongWrapperFactory());
+env.registerWrapper(Amount.class, new AmountWrapper());
+env.registerWrapper(Rate.class, new RateWrapper());
 
 var ctx = new DefaultComputationContext(env,
-        new DataContext(Descriptor.descriptor("my-computation")));
+        new DataContext(Descriptor.descriptor("fx-conversion")));
 
-// Use the base wrap() method — DefaultComputationContext does not have a wrapLong() helper.
-// Cast to your concrete type after wrapping.
-var a = (WrappedLong) ctx.wrap(100L, Descriptor.descriptor("a"));
-var b = (WrappedLong) ctx.wrap(42L,  Descriptor.descriptor("b"));
-var sum = a.add(b, Descriptor.descriptor("sum"));
+// Use the base wrap() method — cast to your concrete type after wrapping.
+var btcBalance = (WrappedAmount) ctx.wrap(
+        new Amount(Currency.BTC, new BigDecimal("1.5")), Descriptor.descriptor("BTC balance"));
+var btcUsdRate = (WrappedRate) ctx.wrap(
+        new Rate(Currency.BTC, Currency.USD, new BigDecimal("65000.00")), Descriptor.descriptor("BTC/USD rate"));
+
+var usdBalance = btcBalance.convert(btcUsdRate, Descriptor.descriptor("BTC->USD"));
 ```
 
 If you use a custom type frequently, extend `DefaultComputationContext` to add a typed
-`wrapLong()` convenience method, the same way `DefaultComputationContext` does for
-`wrapBigDecimal`, `wrapBigInteger`, etc.
+`wrap(Amount, Descriptor)` overload, the same way `NavComputationContext` does — or the way
+`DefaultComputationContext` does for `wrapBigDecimal`, `wrapBigInteger`, etc.
 
-### Type deserialization
+### Type serialization/deserialization
 
-If you need to serialize and deserialize snapshots containing your custom type, register a
-Jackson deserializer with the `ObjectMapper` inside your custom `ComputationEnvironment`.
-See `DefaultComputationEnvironment` for examples using `ZonedDateTimeSerializer`,
-`MathContextDeserializer`, and `VariableDeserializer`.
+If custom type requires custom JSON serialization or deserialization, register a
+Jackson serializer/deserializer with the `ObjectMapper` inside your custom `ComputationEnvironment`.
+See `DefaultComputationEnvironment` for examples using `ZonedDateTimeSerializer` and
+`MathContextDeserializer`, and `AmountDeserializer` for a custom-type example registered via
+`environment.registerWrapper(Amount.class, new AmountWrapper(), new AmountDeserializer())`.
 
 ---
 
