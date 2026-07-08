@@ -385,10 +385,10 @@ If you use a custom type frequently, extend `DefaultComputationContext` to add a
 `wrap(Amount, Descriptor)` overload, the same way `NavComputationContext` does — or the way
 `DefaultComputationContext` does for `wrapBigDecimal`, `wrapBigInteger`, etc.
 
-### Type deserialization
+### Type serialization/deserialization
 
-If you need to serialize and deserialize snapshots containing your custom type, register a
-Jackson deserializer with the `ObjectMapper` inside your custom `ComputationEnvironment`.
+If custom type requires custom JSON serialization or deserialization, register a
+Jackson serializer/deserializer with the `ObjectMapper` inside your custom `ComputationEnvironment`.
 See `DefaultComputationEnvironment` for examples using `ZonedDateTimeSerializer` and
 `MathContextDeserializer`, and `AmountDeserializer` for a custom-type example registered via
 `environment.registerWrapper(Amount.class, new AmountWrapper(), new AmountDeserializer())`.
