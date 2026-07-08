@@ -14,7 +14,7 @@ public class NavComputationContext extends DefaultComputationContext {
 
     static {
 
-        environment = new DefaultComputationEnvironment();
+        environment = DefaultComputationEnvironment.create();
 
         //register wrappers
         environment.registerWrapper(Amount.class, new AmountWrapper(), new AmountDeserializer());

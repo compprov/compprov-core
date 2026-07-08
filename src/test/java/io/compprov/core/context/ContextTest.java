@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ContextTest {
 
-    private static final DefaultComputationEnvironment environment = new DefaultComputationEnvironment();
+    private static final DefaultComputationEnvironment environment = DefaultComputationEnvironment.create();
 
     private WrappedMathContext mc(DefaultComputationContext ctx, int precision, RoundingMode rm) {
         return ctx.wrapMathContext(new MathContext(precision, rm), Descriptor.descriptor("mc"));
@@ -82,7 +82,7 @@ public class ContextTest {
     @Test
     public void context_tracks_variable_count() {
         final var context = new DefaultComputationContext(
-                new DefaultComputationEnvironment(),
+                DefaultComputationEnvironment.create(),
                 new DataContext(Descriptor.descriptor("test")));
         final var mc = mc(context, 3, RoundingMode.DOWN);
         final var x = context.wrapBigDecimal(new BigDecimal("3"), Descriptor.descriptor("x"));
@@ -98,7 +98,7 @@ public class ContextTest {
     @Test
     public void context_operations_chain_correctly() {
         final var context = new DefaultComputationContext(
-                new DefaultComputationEnvironment(),
+                DefaultComputationEnvironment.create(),
                 new DataContext(Descriptor.descriptor("test")));
         final var mc = mc(context, 3, RoundingMode.DOWN);
         final var a = context.wrapBigDecimal(new BigDecimal("10"), Descriptor.descriptor("a"));
@@ -115,7 +115,7 @@ public class ContextTest {
     @Test
     public void named_result_descriptor_is_preserved() {
         final var context = new DefaultComputationContext(
-                new DefaultComputationEnvironment(),
+                DefaultComputationEnvironment.create(),
                 new DataContext(Descriptor.descriptor("test")));
         final var mc = mc(context, 3, RoundingMode.DOWN);
         final var x = context.wrapBigDecimal(new BigDecimal("7"), Descriptor.descriptor("x"));
@@ -129,7 +129,7 @@ public class ContextTest {
     @Test
     public void variable_track_contains_underlying_value_class_name() {
         final var context = new DefaultComputationContext(
-                new DefaultComputationEnvironment(),
+                DefaultComputationEnvironment.create(),
                 new DataContext(Descriptor.descriptor("test")));
         final var x = context.wrapBigDecimal(new BigDecimal("1"), Descriptor.descriptor("x"));
 
@@ -139,7 +139,7 @@ public class ContextTest {
     @Test
     public void operation_track_contains_wrapper_class_name() {
         final var context = new DefaultComputationContext(
-                new DefaultComputationEnvironment(),
+                DefaultComputationEnvironment.create(),
                 new DataContext(Descriptor.descriptor("test")));
         final var mc = mc(context, 3, RoundingMode.DOWN);
         final var x = context.wrapBigDecimal(new BigDecimal("1"), Descriptor.descriptor("x"));
@@ -154,7 +154,7 @@ public class ContextTest {
     public void fromJson_restores_variables_and_operations() {
 
         final var ctx = new DefaultComputationContext(
-                new DefaultComputationEnvironment(),
+                DefaultComputationEnvironment.create(),
                 new DataContext(Descriptor.descriptor("test")));
 
         final var mc = mc(ctx, 3, RoundingMode.DOWN);
@@ -164,7 +164,7 @@ public class ContextTest {
 
         String json = ctx.getEnvironment().toJson(ctx.snapshot());
 
-        final var newEnv = new DefaultComputationEnvironment();
+        final var newEnv = DefaultComputationEnvironment.create();
         final var restored = newEnv.fromJson(json);
 
         assertEquals(ctx.snapshot(), restored);
@@ -173,7 +173,7 @@ public class ContextTest {
     @Test
     public void wrap_throws_when_descriptor_required_and_null() {
         final var context = new DefaultComputationContext(
-                new DefaultComputationEnvironment(true, false),
+                DefaultComputationEnvironment.create(true, false),
                 new DataContext(Descriptor.descriptor("test")));
 
         assertThrows(IllegalArgumentException.class,
@@ -183,7 +183,7 @@ public class ContextTest {
     @Test
     public void big_integer_track_contains_correct_class_names() {
         final var context = new DefaultComputationContext(
-                new DefaultComputationEnvironment(),
+                DefaultComputationEnvironment.create(),
                 new DataContext(Descriptor.descriptor("test")));
         final var a = context.wrapBigInteger(java.math.BigInteger.valueOf(6), Descriptor.descriptor("a"));
         final var b = context.wrapBigInteger(java.math.BigInteger.valueOf(3), Descriptor.descriptor("b"));

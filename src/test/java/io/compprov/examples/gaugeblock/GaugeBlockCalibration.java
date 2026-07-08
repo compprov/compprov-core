@@ -7,7 +7,6 @@ import io.compprov.core.DefaultComputationEnvironment;
 import io.compprov.examples.nav.NetAssetValueCalculator;
 import io.compprov.examples.nav.wrapped.NavComputationContext;
 import org.junit.jupiter.api.Test;
-import org.w3c.dom.ls.LSOutput;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -72,7 +71,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class GaugeBlockCalibration {
 
-    private static final ComputationEnvironment ENVIRONMENT = new DefaultComputationEnvironment();
+    private static final ComputationEnvironment ENVIRONMENT = DefaultComputationEnvironment.create();
 
     @Test
     public void calibrate() {

@@ -5,6 +5,7 @@ import io.compprov.core.wrappers.WrappedBigDecimal;
 import io.compprov.core.wrappers.WrappedBigInteger;
 import io.compprov.core.wrappers.WrappedMathContext;
 import io.compprov.core.wrappers.primitive.WrappedInteger;
+import io.compprov.core.wrappers.subgraph.WrappedSubgraph;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -65,5 +66,9 @@ public class DefaultComputationContext extends ComputationContext {
      */
     public WrappedMathContext wrapMathContext(MathContext value, Descriptor descriptor) {
         return (WrappedMathContext) super.wrap(value, descriptor);
+    }
+
+    public WrappedSubgraph wrapSubgraph(Subgraph value, Descriptor descriptor) {
+        return (WrappedSubgraph) super.wrap(value, descriptor);
     }
 }

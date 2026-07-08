@@ -25,7 +25,7 @@ public class WrappedBigDecimalTest {
     @BeforeEach
     void setUp() {
         ctx = new DefaultComputationContext(
-                new DefaultComputationEnvironment(),
+                DefaultComputationEnvironment.create(),
                 new DataContext(Descriptor.descriptor("test")));
     }
 
@@ -275,9 +275,9 @@ public class WrappedBigDecimalTest {
 
         var record = ctx.snapshot();
         assertTrue(record.variables().stream().map(v -> v.track().getId())
-                .filter(id -> id.equals(a.getVariableTrack().getId())).findFirst().isPresent());
+                .anyMatch(id -> id.equals(a.getVariableTrack().getId())));
         assertTrue(record.variables().stream().map(v -> v.track().getId())
-                .filter(id -> id.equals(b.getVariableTrack().getId())).findFirst().isPresent());
+                .anyMatch(id -> id.equals(b.getVariableTrack().getId())));
     }
 
     @Test
@@ -289,7 +289,7 @@ public class WrappedBigDecimalTest {
 
         var record = ctx.snapshot();
         assertTrue(record.variables().stream().map(v -> v.track().getId())
-                .filter(id -> id.equals(sum.getVariableTrack().getId())).findFirst().isPresent());
+                .anyMatch(id -> id.equals(sum.getVariableTrack().getId())));
     }
 
     // ── addBulk ───────────────────────────────────────────────────────────────

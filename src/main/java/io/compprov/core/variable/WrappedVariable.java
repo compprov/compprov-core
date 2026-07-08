@@ -1,6 +1,7 @@
 package io.compprov.core.variable;
 
 import io.compprov.core.ComputationContext;
+import io.compprov.core.Snapshot;
 import io.compprov.core.meta.Descriptor;
 
 import java.util.List;
@@ -21,4 +22,8 @@ public interface WrappedVariable<T> {
      * @return
      */
     Function<List<Object>, Object> getFunction(Descriptor operationDescriptor);
+
+    default Snapshot.Variable snapshot() {
+        return new Snapshot.Variable(getVariableTrack(), getValue());
+    }
 }
