@@ -173,10 +173,9 @@ a cost: every iteration adds its own operations and intermediate variables to th
 both live heap usage and exported snapshot size grow with iteration count **times** the
 number of tracked steps per iteration.
 
-**Subgraph folding** (implemented as `Subgraph` / `WrappedSubgraph`, referred to as
-"fragmentation" in commit history — see [naming](#a-note-on-naming) below) addresses this:
+**Subgraph folding** (implemented as `Subgraph` / `WrappedSubgraph`:
 define the repeated step once as a reusable template, then replay it per cycle as a single
-opaque operation instead of re-recording its internal steps every time.
+ operation instead of re-recording its internal steps every time.
 
 ### Why it matters
 
@@ -253,30 +252,6 @@ for (long i = 0; i < totalPoints; i++) {
 
 See the full runnable version in `io.compprov.examples.pi.PiCalculator` (`calculate()`), and
 the side-by-side benchmark in `io.compprov.examples.pi.PiCalculationStress`.
-
-### Trade-off: audit granularity
-
-Because the template's internal steps aren't re-recorded on every call, folding trades some
-audit granularity for scale: the outer CPG shows *that* `execute` was called with
-`(x_4237, y_4237)` and produced `inCircle_4237`, but not that call's intermediate `x²`, `y²`,
-or rounded distance — those only exist, generically, in the template's own one-time
-snapshot (`templateCtx.snapshot()`). Reach for folding for the repeated inner step of a
-cyclic algorithm where per-iteration micro-steps aren't independently interesting; keep
-normal tracking for anything where every intermediate value must be individually auditable.
-
-Also note that `WrappedSubgraph.execute` synchronizes internally on the `Subgraph` instance,
-so concurrent calls against the *same* fragment are serialized — give each parallel worker
-its own `Subgraph` instance (built from the same template context) if you need parallel
-throughput through the fold.
-
-### A note on naming
-
-This feature is called "fragmentation" in the codebase and commit history, but that name
-describes the opposite of what happens at read time — nothing is broken apart; a repeated
-computation is captured once and its repetitions are *collapsed* into single nodes. Names
-that better match the mechanism: **subgraph folding**, **cycle folding**, or **template
-subgraphs**. This README uses "subgraph folding" going forward; the class names
-(`Subgraph`, `WrappedSubgraph`, `wrapSubgraph`) are unaffected either way.
 
 ---
 
