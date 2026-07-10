@@ -384,6 +384,12 @@ public final class WrappedBigDecimal extends AbstractWrappedVariable<BigDecimal>
                 resultDescriptor);
     }
 
+    /**
+     *
+     * @param mc, newScale is taken from mc.precision and rounding mode is mc.roundingMode.
+     * @param resultDescriptor
+     * @return
+     */
     public WrappedBigDecimal setScale(WrappedMathContext mc, Descriptor resultDescriptor) {
         Objects.requireNonNull(mc, "mc");
         return (WrappedBigDecimal) execute(
