@@ -253,6 +253,67 @@ for (long i = 0; i < totalPoints; i++) {
 See the full runnable version in `io.compprov.examples.pi.PiCalculator` (`calculate()`), and
 the side-by-side benchmark in `io.compprov.examples.pi.PiCalculationStress`.
 
+### Concurrency
+
+`WrappedSubgraph` exposes two ways to invoke the folded template, trading memory for
+parallelism:
+
+- **`execute(args, resultDescriptor)`** replays the template against a single `MutableState`
+  that's allocated once, when the `Subgraph` is built, and reused for every call. Concurrent
+  calls are safe — they synchronize on that shared state — but fully serialized, so calling it
+  from multiple threads gives no speedup. This is the cheapest option and the right default for
+  a single-threaded driving loop, like the Pi example above.
+- **`executeConcurrent(args, resultDescriptor)`** allocates a fresh `MutableState` — a full copy
+  of the template's intermediate variables — for every call, so independent invocations never
+  contend on shared state and can run truly in parallel. The tradeoff is one extra
+  allocation-and-copy per call.
+
+### Reproducing intermediate steps
+
+Folding means `execute()` / `executeConcurrent()` deliberately don't record the template's
+internal steps in the outer CPG — that's the point. When you need to inspect one specific call
+in full detail (debugging, audit, a spot-check on a suspicious result), reconstruct it as its
+own independent CPG using `extractSubgraph()`, `copyWith`, and `compute`:
+
+```java
+// 1. Export the template as a standalone snapshot: its full operation chain (xSquared,
+//    ySquared, dist, distRound, inCircle) with the placeholder values it was built with.
+Snapshot templateSnapshot = piStep.extractSubgraph();
+
+// 2. Substitute the template's INPUT variables with the actual arguments from the call you
+//    want to inspect — here, the x_42/y_42 point from the loop above.
+Snapshot callSnapshot = env.copyWith(
+        templateSnapshot,
+        Descriptor.descriptor("Pi step replay for point 42"),
+        Map.of(
+                x.getVariableTrack().getId(), new ValueWithDescriptor(
+                        Descriptor.descriptor("x"), xi.getValue()),
+                y.getVariableTrack().getId(), new ValueWithDescriptor(
+                        Descriptor.descriptor("y"), yi.getValue())));
+
+// 3. Replay it. This produces a fresh ComputationContext with every intermediate variable
+//    tracked, exactly as if folding had never happened for this one call.
+ComputationContext replay = env.compute(callSnapshot);
+System.out.println(env.toHumanReadableLog(replay.snapshot()));
+```
+
+`x` and `y` here are the same template-context variables used to build the `Subgraph`'s
+`argumentIds` — `copyWith` only accepts substitutions for `INPUT`-kind variables, which is
+exactly what those are.
+
+```java
+// Multiple threads calling the SAME WrappedSubgraph instance concurrently:
+IntStream.range(0, totalPoints).parallel().forEach(i -> {
+    var xi = ctx.wrapBigDecimal(BigDecimal.valueOf(random.nextDouble()), Descriptor.descriptor("x_" + i));
+    var yi = ctx.wrapBigDecimal(BigDecimal.valueOf(random.nextDouble()), Descriptor.descriptor("y_" + i));
+    piStep.executeConcurrent(List.of(xi, yi), Descriptor.descriptor("inCircle_" + i));
+});
+```
+
+`ctx.wrapBigDecimal(...)` and `ctx.wrapSubgraph(...)` are themselves thread-safe (see
+[Thread safety](#thread-safety)), so the outer driving context needs no extra synchronization
+either way — the `execute` vs. `executeConcurrent` choice only affects the subgraph replay itself.
+
 ---
 
 ## Extending with custom type wrappers
@@ -417,6 +478,10 @@ be shared across threads and computations.
 `ComputationContext` is thread-safe for all wrap and executeOperation calls. The `snapshot()`
 method is **not** safe to call while other threads are still recording operations into the same
 context.
+
+`WrappedSubgraph.execute()` and `executeConcurrent()` are both safe to call concurrently on the
+same instance, but with different tradeoffs — see [Concurrency](#concurrency) under Subgraph
+folding.
 
 ---
 
