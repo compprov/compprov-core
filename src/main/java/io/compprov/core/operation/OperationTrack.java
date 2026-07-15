@@ -16,7 +16,7 @@ public final class OperationTrack {
 
     public OperationTrack(int numericId, ZonedDateTime startedAt, ZonedDateTime finishedAt,
                           Descriptor descriptor, String wrapperClass) {
-        this.id = "op_%s".formatted(numericId);
+        this.id = "op_" + numericId;
         this.numericId = numericId;
         this.startedAt = Objects.requireNonNull(startedAt, "startedAt");
         this.finishedAt = Objects.requireNonNull(finishedAt, "finishedAt");

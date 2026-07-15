@@ -2,13 +2,14 @@ package io.compprov.core;
 
 import io.compprov.core.meta.Descriptor;
 import io.compprov.core.operation.OperationTrack;
+import io.compprov.core.operation.WrappedArgument;
 import io.compprov.core.operation.WrappedOperation;
 import io.compprov.core.variable.VariableKind;
 import io.compprov.core.variable.VariableTrack;
 import io.compprov.core.variable.VariableWrapper;
 import io.compprov.core.variable.WrappedVariable;
 
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
@@ -61,26 +62,23 @@ public class ComputationContext {
      * @param resultDescriptor descriptor for the result variable, or {@code null} to auto-generate one
      * @return the wrapped result variable
      */
-    public WrappedVariable executeOperation(LinkedHashMap<String, WrappedVariable> arguments,
+    public WrappedVariable executeOperation(List<WrappedArgument> arguments,
                                             Descriptor opDescriptor,
                                             Descriptor resultDescriptor) {
         Objects.requireNonNull(arguments, "arguments");
         Objects.requireNonNull(opDescriptor, "opDescriptor");
 
         final var started = environment.clock.instant().atZone(environment.zoneId);
-        final var caller = arguments.values().iterator().next();
+        final var caller = arguments.get(0).variable();
         final var functionToCall = caller.getFunction(opDescriptor);
         if (functionToCall == null) {
             throw new IllegalStateException("No function registered for operation: " + opDescriptor.getName());
         }
-        final var result = functionToCall.apply(arguments.values().stream().map(WrappedVariable::getValue).toList());
+        final var result = functionToCall.apply(quickExtract(arguments));
         final var finished = environment.clock.instant().atZone(environment.zoneId);
 
         Objects.requireNonNull(result, "computation must not return null");
         final var wrappedResult = wrap(result, resultDescriptor, VariableKind.OUTPUT);
-
-        final var mappingArguments = new LinkedHashMap<String, String>();
-        arguments.forEach((k, v) -> mappingArguments.put(k, v.getVariableTrack().getId()));
 
         final var wrappedOperation = operation(
                 new OperationTrack(
@@ -89,7 +87,7 @@ public class ComputationContext {
                         finished,
                         opDescriptor,
                         wrappedResult.getClass().getName()),
-                mappingArguments,
+                arguments,
                 wrappedResult.getVariableTrack().getId());
         data.operations.put(wrappedOperation.getOperationTrack().getId(), wrappedOperation);
         data.producedBy.put(wrappedResult.getVariableTrack().getId(), wrappedOperation);
@@ -152,7 +150,7 @@ public class ComputationContext {
     private WrappedVariable executeSnapshotOperation(Snapshot.Operation operation) {
         Objects.requireNonNull(operation, "operation");
 
-        final var arguments = operation.arguments().stream().map(pair -> data.variables.get(pair.value())).toList();
+        final var arguments = operation.arguments().stream().map(pair -> data.variables.get(pair.variableId())).toList();
 
         final var started = environment.clock.instant().atZone(environment.zoneId);
         final var caller = arguments.get(0);
@@ -168,8 +166,6 @@ public class ComputationContext {
         final var oldResult = data.variables.get(operation.resultId());
         final var reWrappedResult = wrapSnapshotVariable(new Snapshot.Variable(oldResult.getVariableTrack(), newResultValue));
 
-        final var argumentsMap = new LinkedHashMap<String, String>();
-        operation.arguments().forEach(argument -> argumentsMap.put(argument.key(), (String) argument.value()));
         final var wrappedOperation = operation(
                 new OperationTrack(
                         operation.track().getNumericId(),
@@ -177,7 +173,7 @@ public class ComputationContext {
                         finished,
                         opDescriptor,
                         newResultValue.getClass().getName()),
-                argumentsMap,
+                operation.arguments(),
                 reWrappedResult.getVariableTrack().getId());
         data.operations.put(wrappedOperation.getOperationTrack().getId(), wrappedOperation);
         data.operationCounter.set(wrappedOperation.getOperationTrack().getNumericId());
@@ -232,5 +228,13 @@ public class ComputationContext {
 
     public WrappedOperation producedBy(String variableId) {
         return data.producedBy.get(variableId);
+    }
+
+    private List<Object> quickExtract(List<WrappedArgument> arguments) {
+        final var result = new ArrayList<>(arguments.size());
+        for (int i = 0; i < arguments.size(); i++) {
+            result.add(arguments.get(i).variable().getValue());
+        }
+        return result;
     }
 }

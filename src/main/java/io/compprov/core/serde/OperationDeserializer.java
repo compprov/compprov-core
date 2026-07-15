@@ -2,8 +2,8 @@ package io.compprov.core.serde;
 
 import io.compprov.core.Snapshot;
 import io.compprov.core.meta.Descriptor;
-import io.compprov.core.meta.Pair;
 import io.compprov.core.operation.OperationTrack;
+import io.compprov.core.operation.WrappedArgumentId;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
@@ -26,7 +26,7 @@ public class OperationDeserializer extends StdDeserializer<Snapshot.Operation> {
     public Snapshot.Operation deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
         JsonNode node = ctxt.readTree(p);
 
-        JavaType listOfPairType = ctxt.getTypeFactory().constructCollectionType(ArrayList.class, Pair.class);
+        JavaType listOfWrappedArgumentIdType = ctxt.getTypeFactory().constructCollectionType(ArrayList.class, WrappedArgumentId.class);
         JavaType mapOfArgumentsType = ctxt.getTypeFactory().constructMapType(LinkedHashMap.class, String.class, String.class);
 
         final var trackNode = node.get("track");
@@ -38,16 +38,16 @@ public class OperationDeserializer extends StdDeserializer<Snapshot.Operation> {
         final var operationTrack = new OperationTrack(numericId, startedAt, finishedAt, descriptor, wrapperClass);
 
         final var argumentsNode = node.get("arguments");
-        List<Pair> argumentsList;
+        List<WrappedArgumentId> argumentsList;
         if (argumentsNode.isArray()) {
             //to preserve order in JSON
-            argumentsList = ctxt.readTreeAsValue(argumentsNode, listOfPairType);
+            argumentsList = ctxt.readTreeAsValue(argumentsNode, listOfWrappedArgumentIdType);
         } else {
             //backward compatibility
             LinkedHashMap<String, String> argumentsMap = ctxt.readTreeAsValue(argumentsNode, mapOfArgumentsType);
             argumentsList = argumentsMap.entrySet()
                     .stream()
-                    .map(entry -> new Pair(entry.getKey(), entry.getValue()))
+                    .map(entry -> new WrappedArgumentId(entry.getKey(), entry.getValue()))
                     .toList();
         }
 

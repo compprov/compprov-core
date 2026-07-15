@@ -110,15 +110,18 @@ System.out.println(env.toHumanReadableLog(snapshot));
     { "track" : { "id" : "o_5", "descriptor" : { "name" : "total" }, ... }, "value" : "108.0000000" }
   ],
   "operations" : [
-    { "track" : { "id" : "o_1", "descriptor" : { "name" : "multiply" }, ... },
-      "arguments" : { "a" : "i_2", "b" : "i_3", "mc" : "i_1" },
+    { "track" : { "id" : "op_1", "descriptor" : { "name" : "multiply" }, ... },
+      "arguments" : [ { "key" : "a", "value" : "i_2" }, { "key" : "b", "value" : "i_3" }, { "key" : "mc", "value" : "i_1" } ],
       "resultId" : "o_4" },
-    { "track" : { "id" : "o_2", "descriptor" : { "name" : "add" }, ... },
-      "arguments" : { "a" : "i_2", "b" : "o_4", "mc" : "i_1" },
+    { "track" : { "id" : "op_2", "descriptor" : { "name" : "add" }, ... },
+      "arguments" : [ { "key" : "a", "value" : "i_2" }, { "key" : "b", "value" : "o_4" }, { "key" : "mc", "value" : "i_1" } ],
       "resultId" : "o_5" }
   ]
 }
 ```
+
+Each entry in `arguments` is a `{key, value}` pair (argument name → referenced variable id),
+kept as an ordered list rather than a map so argument order is preserved verbatim in the JSON.
 
 Variable IDs use the prefix `i_` for inputs and `o_` for outputs, followed by a sequential
 numeric counter that is stable within a single context run.
@@ -257,6 +260,49 @@ The same folding pattern also handles integrands where rejection sampling doesn'
 `io.compprov.examples.pi.MonteCarloArcsineIntegrationStress`, which estimates `pi` via the
 average-value method on `f(x) = 1/sqrt(1-x^2)` (unbounded as `x -> 1`, so no finite bounding box
 exists for rejection sampling).
+
+### Returning multiple values from a subgraph
+
+A `Subgraph` already accepts any number of inputs natively — `argumentIds` is a list, and
+`execute(List.of(arg1, arg2, ...), resultDescriptor)` takes as many argument values as the
+template declares. What it can't do natively is return more than one value: one `execute()`
+call records exactly one `execute` operation producing exactly one result variable, because
+`resultId` is singular.
+
+When a step's output is inherently multi-valued (an integrator that advances both position and
+velocity in one step, for example), pack the values into a single tracked array on the way out,
+and unpack them wherever an individual component is needed:
+
+- **`WrappedBigDecimal.array(values, resultDescriptor)`** (or `WrappedBigInteger.array(...)`)
+  packs the receiver plus a list of other scalars into one `WrappedBigDecimals` /
+  `WrappedBigIntegers` — a single tracked variable wrapping a `BigDecimal[]` / `BigInteger[]`.
+- **`WrappedBigDecimals.extract(index, resultDescriptor)`** (or `WrappedBigIntegers.extract(...)`)
+  reads a single element back out, by a `WrappedInteger` index, as its own tracked scalar.
+
+```java
+// Inside the template: run the step's math to compute yNext/vNext, then pack both outputs
+// into the single array the Subgraph's resultId points to -- this part is required, since
+// a Subgraph can only return one result variable.
+var yvNext = yNext.array(List.of(vNext), Descriptor.descriptor("y_v_next"));
+```
+
+Packing the *input* the same way is optional — the template could just as well declare `y` and
+`v` as two separate argument ids. It's often still worth doing when the subgraph drives a loop:
+since each call's output is already a packed array, feeding that same packed value straight
+back in as the next call's single argument avoids an unpack/repack round-trip between
+iterations:
+
+```java
+var yv = ctx.wrapBigDecimals(new BigDecimal[]{initialY, initialV}, Descriptor.descriptor("y_v_0"));
+for (long i = 0; i < steps; i++) {
+    // yv is already shaped as a single packed argument, so it feeds directly into the next call.
+    yv = (WrappedBigDecimals) stepSubgraph.execute(List.of(yv), Descriptor.descriptor("step_" + i));
+}
+```
+
+See the full runnable version — an atmospheric drag-descent simulation carrying altitude and
+velocity across every folded integration step — in
+`io.compprov.examples.physics.AtmosphericDragDescentStress`.
 
 ### Concurrency
 
@@ -474,6 +520,8 @@ See `DefaultComputationEnvironment` for examples using `ZonedDateTimeSerializer`
 |---|---|---|
 | `BigDecimal` | `WrappedBigDecimal` | Full arithmetic: add, subtract, multiply, divide, pow, sqrt, abs, negate, remainder, max, min, and more |
 | `BigInteger` | `WrappedBigInteger` | Full arithmetic including modPow (ternary) |
+| `BigDecimal[]` | `WrappedBigDecimals` | Tracked array; `extract(index, ...)` reads one element out. Built via `WrappedBigDecimal.array(...)` — see [Returning multiple values from a subgraph](#returning-multiple-values-from-a-subgraph) |
+| `BigInteger[]` | `WrappedBigIntegers` | Tracked array; `extract(index, ...)` reads one element out. Built via `WrappedBigInteger.array(...)` |
 | `Integer` | `WrappedInteger` | Parameter-only type; used as an argument to `pow`, `scaleByPowerOfTen`, etc. |
 | `Long` | `WrappedLong` | Parameter-only type |
 | `MathContext` | `WrappedMathContext` | Carries precision and rounding mode; passed to most `BigDecimal` / `BigInteger` ops |

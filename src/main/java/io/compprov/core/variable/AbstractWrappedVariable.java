@@ -2,8 +2,9 @@ package io.compprov.core.variable;
 
 import io.compprov.core.ComputationContext;
 import io.compprov.core.meta.Descriptor;
+import io.compprov.core.operation.WrappedArgument;
 
-import java.util.LinkedHashMap;
+import java.util.List;
 
 public abstract class AbstractWrappedVariable<T> implements WrappedVariable<T> {
     private final ComputationContext context;
@@ -37,7 +38,7 @@ public abstract class AbstractWrappedVariable<T> implements WrappedVariable<T> {
     }
 
     protected WrappedVariable execute(Descriptor opDescriptor,
-                                      LinkedHashMap<String, WrappedVariable> arguments,
+                                      List<WrappedArgument> arguments,
                                       Descriptor resultDescriptor) {
         return getContext().executeOperation(
                 arguments,
@@ -48,10 +49,8 @@ public abstract class AbstractWrappedVariable<T> implements WrappedVariable<T> {
     protected WrappedVariable execute(Descriptor opDescriptor,
                                       String argument1Name, WrappedVariable argument1,
                                       Descriptor resultDescriptor) {
-        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
-        arguments.put(argument1Name, argument1);
         return getContext().executeOperation(
-                arguments,
+                List.of(new WrappedArgument(argument1Name, argument1)),
                 opDescriptor,
                 resultDescriptor);
     }
@@ -60,14 +59,8 @@ public abstract class AbstractWrappedVariable<T> implements WrappedVariable<T> {
                                       String argument1Name, WrappedVariable argument1,
                                       String argument2Name, WrappedVariable argument2,
                                       Descriptor resultDescriptor) {
-        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
-        arguments.put(argument1Name, argument1);
-        arguments.put(argument2Name, argument2);
-        if (arguments.size() != 2) {
-            throw new IllegalArgumentException("Argument names must be unique");
-        }
         return getContext().executeOperation(
-                arguments,
+                List.of(new WrappedArgument(argument1Name, argument1), new WrappedArgument(argument2Name, argument2)),
                 opDescriptor,
                 resultDescriptor);
     }
@@ -77,15 +70,10 @@ public abstract class AbstractWrappedVariable<T> implements WrappedVariable<T> {
                                       String argument2Name, WrappedVariable argument2,
                                       String argument3Name, WrappedVariable argument3,
                                       Descriptor resultDescriptor) {
-        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
-        arguments.put(argument1Name, argument1);
-        arguments.put(argument2Name, argument2);
-        arguments.put(argument3Name, argument3);
-        if (arguments.size() != 3) {
-            throw new IllegalArgumentException("Argument names must be unique");
-        }
         return getContext().executeOperation(
-                arguments,
+                List.of(new WrappedArgument(argument1Name, argument1),
+                        new WrappedArgument(argument2Name, argument2),
+                        new WrappedArgument(argument3Name, argument3)),
                 opDescriptor,
                 resultDescriptor);
     }
@@ -97,16 +85,11 @@ public abstract class AbstractWrappedVariable<T> implements WrappedVariable<T> {
                                       String argument4Name, WrappedVariable argument4,
                                       Descriptor resultDescriptor) {
 
-        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
-        arguments.put(argument1Name, argument1);
-        arguments.put(argument2Name, argument2);
-        arguments.put(argument3Name, argument3);
-        arguments.put(argument4Name, argument4);
-        if (arguments.size() != 4) {
-            throw new IllegalArgumentException("Argument names must be unique");
-        }
         return getContext().executeOperation(
-                arguments,
+                List.of(new WrappedArgument(argument1Name, argument1),
+                        new WrappedArgument(argument2Name, argument2),
+                        new WrappedArgument(argument3Name, argument3),
+                        new WrappedArgument(argument4Name, argument4)),
                 opDescriptor,
                 resultDescriptor);
     }

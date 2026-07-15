@@ -18,8 +18,8 @@ public final class VariableTrack {
     public VariableTrack(int numericId, ZonedDateTime createdAt, VariableKind kind,
                          Descriptor descriptor, String valueClass) {
         this.id = switch (kind) {
-            case INPUT -> "i_%s".formatted(numericId);
-            case OUTPUT -> "o_%s".formatted(numericId);
+            case INPUT -> "i_" + numericId;
+            case OUTPUT -> "o_" + numericId;
         };
         this.numericId = numericId;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt");

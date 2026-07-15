@@ -4,15 +4,16 @@ import io.compprov.core.ComputationContext;
 import io.compprov.core.Snapshot;
 import io.compprov.core.Subgraph;
 import io.compprov.core.meta.Descriptor;
+import io.compprov.core.operation.WrappedArgument;
 import io.compprov.core.operation.WrappedOperation;
 import io.compprov.core.variable.AbstractWrappedVariable;
 import io.compprov.core.variable.VariableTrack;
 import io.compprov.core.variable.WrappedVariable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -84,10 +85,10 @@ public class WrappedSubgraph extends AbstractWrappedVariable<Subgraph> {
      */
     public WrappedVariable execute(List<WrappedVariable> args, Descriptor resultDescriptor) {
         Objects.requireNonNull(args, "args");
-        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
-        arguments.put("subgraph", this);
+        final var arguments = new ArrayList<WrappedArgument>(args.size() + 1);
+        arguments.add(new WrappedArgument("subgraph", this));
         for (int i = 0; i < args.size(); i++) {
-            arguments.put("a" + i, args.get(i));
+            arguments.add(new WrappedArgument("a" + i, args.get(i)));
         }
         return execute(
                 OP_EXECUTE,
@@ -105,10 +106,10 @@ public class WrappedSubgraph extends AbstractWrappedVariable<Subgraph> {
      */
     public WrappedVariable executeConcurrent(List<WrappedVariable> args, Descriptor resultDescriptor) {
         Objects.requireNonNull(args, "args");
-        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
-        arguments.put("subgraph", this);
+        final var arguments = new ArrayList<WrappedArgument>(args.size() + 1);
+        arguments.add(new WrappedArgument("subgraph", this));
         for (int i = 0; i < args.size(); i++) {
-            arguments.put("a" + i, args.get(i));
+            arguments.add(new WrappedArgument("a" + i, args.get(i)));
         }
         return execute(
                 OP_EXECUTE_CONCURRENT,
@@ -131,18 +132,18 @@ public class WrappedSubgraph extends AbstractWrappedVariable<Subgraph> {
      * @return a snapshot of the subgraph template
      */
     public Snapshot extractSubgraph() {
-            List<Snapshot.Variable> variablesList = getValue().variables()
-                    .stream()
-                    .sorted(Comparator.comparing(it -> it.getVariableTrack().getNumericId()))
-                    .map(WrappedVariable::snapshot)
-                    .toList();
+        List<Snapshot.Variable> variablesList = getValue().variables()
+                .stream()
+                .sorted(Comparator.comparing(it -> it.getVariableTrack().getNumericId()))
+                .map(WrappedVariable::snapshot)
+                .toList();
 
-            List<Snapshot.Operation> operationsList = getValue().operations()
-                    .stream()
-                    .sorted(Comparator.comparing(it -> it.getOperationTrack().getNumericId()))
-                    .map(WrappedOperation::snapshot)
-                    .toList();
+        List<Snapshot.Operation> operationsList = getValue().operations()
+                .stream()
+                .sorted(Comparator.comparing(it -> it.getOperationTrack().getNumericId()))
+                .map(WrappedOperation::snapshot)
+                .toList();
 
-            return new Snapshot(getVariableTrack().getDescriptor(), variablesList, operationsList);
+        return new Snapshot(getVariableTrack().getDescriptor(), variablesList, operationsList);
     }
 }

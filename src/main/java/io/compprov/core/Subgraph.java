@@ -1,15 +1,16 @@
 package io.compprov.core;
 
+import io.compprov.core.operation.OperationArgument;
 import io.compprov.core.operation.WrappedOperation;
 import io.compprov.core.variable.WrappedVariable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * An immutable, reusable template of a previously-recorded computation, captured from a
@@ -89,8 +90,8 @@ public class Subgraph {
     }
 
     public void executeOperation(WrappedOperation operation, MutableState state) {
-        final var operationArgumentIds = operation.getArguments();
-        final var callerId = operationArgumentIds.values().iterator().next();
+        final var operationArguments = operation.getArguments();
+        final var callerId = operationArguments.get(0).variableId();
         final var caller = state.variables.get(callerId);
 
         final var opDescriptor = operation.getOperationTrack().getDescriptor();
@@ -99,10 +100,7 @@ public class Subgraph {
             throw new IllegalStateException("No function registered for operation: " + opDescriptor.getName());
         }
 
-        final var operationArgumentValues = operationArgumentIds.values()
-                .stream()
-                .map(argId -> state.variables.get(argId).value)
-                .collect(Collectors.toList());
+        final var operationArgumentValues = quickExtract(operationArguments, state);
         final var result = functionToCall.apply(operationArgumentValues);
         Objects.requireNonNull(result, "computation must not return null");
 
@@ -163,5 +161,13 @@ public class Subgraph {
     @Override
     public String toString() {
         return "Subgraph of " + resultId + argumentIds;
+    }
+
+    private List<Object> quickExtract(List<? extends OperationArgument> arguments, MutableState state) {
+        final var result = new ArrayList<>(arguments.size());
+        for (int i = 0; i < arguments.size(); i++) {
+            result.add(state.variables.get(arguments.get(i).variableId()).value);
+        }
+        return result;
     }
 }
