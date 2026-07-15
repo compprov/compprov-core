@@ -46,6 +46,7 @@ public final class WrappedBigDecimal extends AbstractWrappedVariable<BigDecimal>
     private static final Descriptor OP_MIN_BULK = Descriptor.descriptor("minBulk", formula("min(a,b0,...,bn)"));
     private static final Descriptor OP_LN_DOUBLE = Descriptor.descriptor("Ln_double", formula("Ln(a)"));
     private static final Descriptor OP_EXP_DOUBLE = Descriptor.descriptor("Exp_double", formula("Exp(a)"));
+    private static final Descriptor OP_COMPARE = Descriptor.descriptor("compare", formula("a.compare(b)"));
 
     private static final Map<Descriptor, Function<List<Object>, Object>> functionsMap;
 
@@ -231,6 +232,12 @@ public final class WrappedBigDecimal extends AbstractWrappedVariable<BigDecimal>
             return BigDecimal.valueOf(dirty);
         });
 
+        functions.put(OP_COMPARE, (arguments) -> {
+            BigDecimal a = (BigDecimal) arguments.get(0);
+            BigDecimal b = (BigDecimal) arguments.get(1);
+            return BigDecimal.valueOf(a.compareTo(b));
+        });
+
         functionsMap = Collections.unmodifiableMap(functions);
     }
 
@@ -385,8 +392,7 @@ public final class WrappedBigDecimal extends AbstractWrappedVariable<BigDecimal>
     }
 
     /**
-     *
-     * @param mc, newScale is taken from mc.precision and rounding mode is mc.roundingMode.
+     * @param mc,              newScale is taken from mc.precision and rounding mode is mc.roundingMode.
      * @param resultDescriptor
      * @return
      */
@@ -513,6 +519,15 @@ public final class WrappedBigDecimal extends AbstractWrappedVariable<BigDecimal>
         return (WrappedBigDecimal) execute(
                 OP_EXP_DOUBLE,
                 "a", this,
+                resultDescriptor);
+    }
+
+    public WrappedBigDecimal compare(WrappedBigDecimal b, Descriptor resultDescriptor) {
+        Objects.requireNonNull(b, "b");
+        return (WrappedBigDecimal) execute(
+                OP_COMPARE,
+                "a", this,
+                "b", b,
                 resultDescriptor);
     }
 }

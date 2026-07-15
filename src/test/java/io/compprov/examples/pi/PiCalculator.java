@@ -95,6 +95,7 @@ public class PiCalculator {
         //recover calculations
         final var recalculated = ENVIRONMENT.compute(snapshot);
         final var result = recalculated.findSingleVariable("estimated Pi").getValue();
+        System.out.println(ENVIRONMENT.toHumanReadableLog(snapshot));
 
         //To reduce GH repository storage, there are just 100 cycles
         assertEquals(new BigDecimal("3.24"), result);

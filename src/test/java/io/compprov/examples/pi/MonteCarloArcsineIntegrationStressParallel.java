@@ -1,0 +1,173 @@
+package io.compprov.examples.pi;
+
+import io.compprov.core.ComputationEnvironment;
+import io.compprov.core.DataContext;
+import io.compprov.core.DefaultComputationContext;
+import io.compprov.core.DefaultComputationEnvironment;
+import io.compprov.core.Subgraph;
+import io.compprov.core.wrappers.WrappedBigDecimal;
+import io.compprov.core.wrappers.WrappedMathContext;
+import io.compprov.core.wrappers.primitive.WrappedInteger;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import static io.compprov.core.meta.Descriptor.descriptor;
+
+/**
+ * Same graph-fold stress-test shape as {@link PiCalculationStress}, estimating the definite integral of
+ * {@code f(x) = 1/sqrt(1-x^2)} over {@code [0, 1]}, whose antiderivative is {@code arcsin(x)}, so the exact
+ * value is {@code arcsin(1) - arcsin(0) = pi/2}.
+ * <p>
+ * {@code f} is unbounded as {@code x} approaches 1, so rejection sampling against a bounding box doesn't apply here
+ * (there is no finite {@code Y_TO}). This uses the average-value method instead:
+ * {@code integral ~= (b - a) * average(f(x_i))} for x_i drawn uniformly
+ * from {@code [0, 1)}. Because {@code Var(f)} is itself infinite (the singularity at x=1 is integrable but
+ * {@code f^2} is not), convergence is slower and noisier than the polynomial examples.
+ */
+public class MonteCarloArcsineIntegrationStressParallel {
+
+    private static final ComputationEnvironment ENVIRONMENT = DefaultComputationEnvironment.create();
+    private static final ThreadLocal<Random> random = ThreadLocal.withInitial(Random::new);
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(4);
+
+    private static final BigDecimal LOWER_BOUND = BigDecimal.ZERO;
+    private static final BigDecimal UPPER_BOUND = BigDecimal.ONE;
+    private static final BigDecimal RANGE = UPPER_BOUND.subtract(LOWER_BOUND);
+
+    private static final BigDecimal ACTUAL_PI = new BigDecimal("3.14159265358979323846");
+
+    //@Test skipped, too huge for automatic testing
+    public void test() throws Exception {
+
+        final var step = 1000;
+        final var totalPointsMax = 250000;
+
+        //warm up (heap memory allocation etc)
+        BigDecimal warmUpAmount = BigDecimal.valueOf(totalPointsMax);
+        calculatePure(warmUpAmount);
+        calculateCompProv(warmUpAmount);
+
+        System.out.println("N\tJPC time\tCompProv time");
+        for (int tp = 10000; tp <= totalPointsMax; tp += step) {
+            BigDecimal tpBD = BigDecimal.valueOf(tp);
+            final var pureTime = calculatePure(tpBD);
+
+            System.gc();
+            System.runFinalization();
+            Thread.sleep(1000);
+            final var compProvTime = calculateCompProv(tpBD);
+
+            System.out.println("%s\t%s\t%s".formatted(tp, pureTime, compProvTime));
+        }
+    }
+
+    public long calculatePure(BigDecimal totalPointsBD) {
+
+        long nano = System.nanoTime();
+
+        final var mc = MathContext.DECIMAL128;
+        final var one = BigDecimal.ONE;
+
+        List<Future<BigDecimal>> results = new ArrayList<>();
+        for (long i = 0; i < totalPointsBD.longValue(); i++) {
+            results.add(executorService.submit(() -> {
+                // random.nextDouble() is always < 1.0, so 1-x^2 never hits zero
+                final var x = BigDecimal.valueOf(random.get().nextDouble());
+                final var oneMinusXSquared = one.subtract(x.pow(2, mc), mc);
+                return one.divide(oneMinusXSquared.sqrt(mc), mc);
+            }));
+        }
+
+        var fxSum = results.stream().map(f -> {
+            try {
+                return f.get();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).reduce(BigDecimal::add).get();
+
+        final var average = fxSum.divide(totalPointsBD, mc);
+        final var estimatedIntegral = average.multiply(RANGE, mc);
+        final var estimatedPi = estimatedIntegral.multiply(BigDecimal.valueOf(2));
+        final var error = ACTUAL_PI.subtract(estimatedPi, mc).abs(mc);
+
+        return System.nanoTime() - nano;
+    }
+
+    public long calculateCompProv(BigDecimal totalPointsBD) throws IOException {
+
+        long nano = System.nanoTime();
+
+        //subgraph: a single sample, x -> 1/sqrt(1-x^2)
+        final var subctx = new DefaultComputationContext(ENVIRONMENT,
+                new DataContext(descriptor("Monte Carlo sample of 1/sqrt(1-x^2)")));
+        {
+            final var x = subctx.wrapBigDecimal(BigDecimal.ZERO, descriptor("x"));
+            final var mc = subctx.wrapMathContext(MathContext.DECIMAL128, descriptor("computation precision"));
+            final var one = subctx.wrapBigDecimal(BigDecimal.ONE, descriptor("Constant 1"));
+            final var twoInt = subctx.wrapInteger(2, descriptor("Constant 2 (int)"));
+            sampleValue(x, one, twoInt, mc, "x");
+        }
+
+        final var ctx = new DefaultComputationContext(ENVIRONMENT,
+                new DataContext(descriptor("Monte Carlo integration of 1/sqrt(1-x^2) in range [0;1] with %s points".formatted(totalPointsBD))));
+        final var mc = ctx.wrapMathContext(MathContext.DECIMAL128, descriptor("computation precision"));
+        final var totalPoints = ctx.wrapBigDecimal(totalPointsBD, descriptor("Total points"));
+        final var range = ctx.wrapBigDecimal(RANGE, descriptor("integration range"));
+        final var two = ctx.wrapBigDecimal(BigDecimal.valueOf(2), descriptor("Constant 2"));
+        final var pi = ctx.wrapBigDecimal(ACTUAL_PI, descriptor("Constant Pi"));
+
+        var fxSum = ctx.wrapBigDecimal(BigDecimal.ZERO, descriptor("f(x) sum initial"));
+        final var sampleSubgraph = ctx.wrapSubgraph(
+                new Subgraph(
+                        subctx,
+                        List.of(subctx.findSingleVariable("x").getVariableTrack().getId()),
+                        subctx.findSingleVariable("x_fx").getVariableTrack().getId()),
+                subctx.descriptor());
+
+        List<Future<WrappedBigDecimal>> results = new ArrayList<>();
+        for (long i = 0; i < totalPoints.getValue().longValue(); i++) {
+            final var final_i = i;
+            results.add(executorService.submit(() -> {
+                final var x = ctx.wrapBigDecimal(BigDecimal.valueOf(random.get().nextDouble()), descriptor("x_" + final_i));
+                return (WrappedBigDecimal) sampleSubgraph.executeConcurrent(List.of(x), descriptor("fx_" + final_i));
+            }));
+        }
+        fxSum = fxSum.addBulk(results.stream().map(f -> {
+            try {
+                return f.get();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }).toList(), mc, descriptor("Sum of samples"));
+        final var average = fxSum.divide(totalPoints, mc, descriptor("average f(x)"));
+        final var estimatedIntegral = average.multiply(range, mc, descriptor("estimated integral"));
+        // integral * 2
+        final var estimatedPi = estimatedIntegral.multiply(two, mc, descriptor("estimated Pi"));
+        final var error = estimatedPi.subtract(pi, mc, descriptor("error")).abs(mc, descriptor("|error|"));
+
+        nano = System.nanoTime() - nano;
+
+        return nano;
+    }
+
+    /**
+     * Evaluates {@code f(x) = 1/sqrt(1-x^2)} at the given sample point.
+     */
+    private static WrappedBigDecimal sampleValue(WrappedBigDecimal x, WrappedBigDecimal one,
+                                                 WrappedInteger twoInt,
+                                                 WrappedMathContext mc, String namePrefix) {
+        final var xSquared = x.pow(twoInt, mc, descriptor(namePrefix + "^2"));
+        final var oneMinusXSquared = one.subtract(xSquared, mc, descriptor("1-" + namePrefix + "^2"));
+        final var sqrtVal = oneMinusXSquared.sqrt(mc, descriptor("sqrt(1-" + namePrefix + "^2)"));
+        return one.divide(sqrtVal, mc, descriptor(namePrefix + "_fx"));
+    }
+}

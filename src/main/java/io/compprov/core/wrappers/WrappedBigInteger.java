@@ -8,7 +8,12 @@ import io.compprov.core.variable.WrappedVariable;
 import io.compprov.core.wrappers.primitive.WrappedInteger;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static io.compprov.core.meta.Meta.formula;
@@ -48,6 +53,7 @@ public final class WrappedBigInteger extends AbstractWrappedVariable<BigInteger>
     private static final Descriptor OP_MULTIPLY_BULK = Descriptor.descriptor("multiplyBulk", formula("a*b0*...*bn"));
     private static final Descriptor OP_MAX_BULK = Descriptor.descriptor("maxBulk", formula("max(a,b0,...,bn)"));
     private static final Descriptor OP_MIN_BULK = Descriptor.descriptor("minBulk", formula("min(a,b0,...,bn)"));
+    private static final Descriptor OP_COMPARE = Descriptor.descriptor("compare", formula("a.compare(b)"));
 
     private static final Map<Descriptor, Function<List<Object>, Object>> functionsMap;
 
@@ -239,6 +245,12 @@ public final class WrappedBigInteger extends AbstractWrappedVariable<BigInteger>
                 result = result.min((BigInteger) arguments.get(i));
             }
             return result;
+        });
+
+        functions.put(OP_COMPARE, (arguments) -> {
+            BigInteger a = (BigInteger) arguments.get(0);
+            BigInteger b = (BigInteger) arguments.get(1);
+            return BigInteger.valueOf(a.compareTo(b));
         });
 
         functionsMap = Collections.unmodifiableMap(functions);
@@ -529,5 +541,14 @@ public final class WrappedBigInteger extends AbstractWrappedVariable<BigInteger>
             arguments.put("b" + i, values.get(i));
         }
         return (WrappedBigInteger) execute(OP_MIN_BULK, arguments, resultDescriptor);
+    }
+
+    public WrappedBigInteger compare(WrappedBigInteger b, Descriptor resultDescriptor) {
+        Objects.requireNonNull(b, "b");
+        return (WrappedBigInteger) execute(
+                OP_COMPARE,
+                "a", this,
+                "b", b,
+                resultDescriptor);
     }
 }

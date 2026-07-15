@@ -1,20 +1,23 @@
 package io.compprov.core;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.compprov.core.meta.Descriptor;
 import io.compprov.core.variable.ValueWithDescriptor;
 import io.compprov.core.variable.VariableKind;
 import io.compprov.core.variable.VariableTrack;
 import io.compprov.core.variable.VariableWrapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.module.SimpleModule;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.time.Clock;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -24,7 +27,7 @@ public class ComputationEnvironment {
 
     protected final Clock clock;
     protected final ZoneId zoneId;
-    protected final ObjectMapper mapper;
+    protected volatile ObjectMapper mapper;
     protected final boolean requireInputDescriptor;
     protected final boolean requireResultDescriptor;
 
@@ -52,20 +55,20 @@ public class ComputationEnvironment {
         wrappers.put(type, wrapper);
     }
 
-    public <T> void registerWrapper(Class<T> type, VariableWrapper<T> wrapper, JsonDeserializer<T> deserializer) {
+    public synchronized <T> void registerWrapper(Class<T> type, VariableWrapper<T> wrapper, ValueDeserializer<T> deserializer) {
         Objects.requireNonNull(type, "type");
         Objects.requireNonNull(wrapper, "wrapper");
         Objects.requireNonNull(deserializer, "deserializer");
         wrappers.put(type, wrapper);
         SimpleModule module = new SimpleModule();
         module.addDeserializer(type, deserializer);
-        mapper.registerModule(module);
+        mapper = mapper.rebuild().addModule(module).build();
     }
 
     public String toJson(Snapshot snapshot) {
         try {
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(snapshot);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("JSON serialization failed", e);
         }
     }
@@ -73,7 +76,7 @@ public class ComputationEnvironment {
     public void toJson(Snapshot snapshot, OutputStream os) {
         try {
             mapper.writerWithDefaultPrettyPrinter().writeValue(os, snapshot);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("JSON serialization failed", e);
         }
     }
@@ -81,7 +84,7 @@ public class ComputationEnvironment {
     public Snapshot fromJson(String json) {
         try {
             return mapper.readValue(json, Snapshot.class);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Unable to deserialize JSON", e);
         }
     }
@@ -89,7 +92,7 @@ public class ComputationEnvironment {
     public Snapshot fromJson(byte[] json) {
         try {
             return mapper.readValue(json, Snapshot.class);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Unable to deserialize JSON", e);
         }
     }
@@ -175,7 +178,7 @@ public class ComputationEnvironment {
     private String writeValueSingleString(Object o) {
         try {
             return mapper.writeValueAsString(o);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("JSON serialization failed", e);
         }
     }

@@ -1,8 +1,6 @@
 package io.compprov.core;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import io.compprov.core.meta.Descriptor;
 import io.compprov.core.meta.Meta;
 import io.compprov.core.serde.DescriptorDeserializer;
@@ -21,6 +19,8 @@ import io.compprov.core.wrappers.MathContextWrapper;
 import io.compprov.core.wrappers.primitive.IntegerWrapper;
 import io.compprov.core.wrappers.primitive.LongWrapper;
 import io.compprov.core.wrappers.subgraph.SubgraphWrapper;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.module.SimpleModule;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -90,9 +90,10 @@ public class DefaultComputationEnvironment extends ComputationEnvironment {
         module.addDeserializer(Snapshot.Variable.class, new VariableDeserializer(wrappers));
         module.addDeserializer(Snapshot.Operation.class, new OperationDeserializer());
         module.addDeserializer(Subgraph.class, new SubgraphDeserializer(this));
-        mapper.configOverride(BigDecimal.class).setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING));
-        mapper.configOverride(BigInteger.class).setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING));
-        mapper.registerModule(module);
+        var builder = mapper.rebuild();
+        builder.withConfigOverride(BigDecimal.class, o -> o.setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING)));
+        builder.withConfigOverride(BigInteger.class, o -> o.setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING)));
+        mapper = builder.addModule(module).build();
     }
 
     @Override

@@ -1,12 +1,11 @@
 package io.compprov.core.serde;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import io.compprov.core.meta.Meta;
 import io.compprov.core.meta.Pair;
-
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdSerializer;
 
 public class MetaSerializer extends StdSerializer<Meta> {
 
@@ -19,8 +18,8 @@ public class MetaSerializer extends StdSerializer<Meta> {
     }
 
     @Override
-    public void serialize(Meta value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-        gen.writeObject(value.getParameters().entrySet()
+    public void serialize(Meta value, JsonGenerator gen, SerializationContext ctxt) throws JacksonException {
+        gen.writePOJO(value.getParameters().entrySet()
                 .stream()
                 .map(entry -> new Pair(entry.getKey(), entry.getValue()))
                 .toList());
