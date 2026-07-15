@@ -1,8 +1,9 @@
 package io.compprov.examples.hydrology;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.compprov.examples.nav.NetAssetValueCalculator;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -16,7 +17,7 @@ import java.util.Objects;
  */
 public class HydrologyDataProvider {
 
-    private Map<String, List<BigDecimal>> dataMap;
+    private final Map<String, List<BigDecimal>> dataMap;
 
     public HydrologyDataProvider(ObjectMapper mapper) {
         try {
@@ -24,7 +25,7 @@ public class HydrologyDataProvider {
                     NetAssetValueCalculator.class.getResourceAsStream("/inputs/hydrology_aggregation.json").readAllBytes(),
                     new TypeReference<Map<String, List<BigDecimal>>>() {
                     });
-        } catch (IOException e) {
+        } catch (IOException | JacksonException e) {
             throw new RuntimeException(e);
         }
     }

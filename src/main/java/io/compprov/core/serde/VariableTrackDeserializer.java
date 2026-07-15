@@ -1,15 +1,14 @@
 package io.compprov.core.serde;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import io.compprov.core.meta.Descriptor;
 import io.compprov.core.variable.VariableKind;
 import io.compprov.core.variable.VariableTrack;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
-import java.io.IOException;
 import java.time.ZonedDateTime;
 
 public class VariableTrackDeserializer extends StdDeserializer<VariableTrack> {
@@ -19,15 +18,14 @@ public class VariableTrackDeserializer extends StdDeserializer<VariableTrack> {
     }
 
     @Override
-    public VariableTrack deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        ObjectMapper mapper = (ObjectMapper) p.getCodec();
-        JsonNode node = mapper.readTree(p);
+    public VariableTrack deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
+        JsonNode node = ctxt.readTree(p);
 
         int numericId = node.path("numericId").asInt();
-        ZonedDateTime createdAt = ZonedDateTime.parse(node.path("createdAt").asText());
-        VariableKind kind = mapper.convertValue(node.path("kind"), VariableKind.class);
-        Descriptor descriptor = mapper.convertValue(node.path("descriptor"), Descriptor.class);
-        String valueClass = node.path("valueClass").asText();
+        ZonedDateTime createdAt = ZonedDateTime.parse(node.path("createdAt").asString());
+        VariableKind kind = ctxt.readTreeAsValue(node.path("kind"), VariableKind.class);
+        Descriptor descriptor = ctxt.readTreeAsValue(node.path("descriptor"), Descriptor.class);
+        String valueClass = node.path("valueClass").asString();
         return new VariableTrack(numericId, createdAt, kind, descriptor, valueClass);
     }
 }

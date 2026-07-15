@@ -253,6 +253,11 @@ for (long i = 0; i < totalPoints; i++) {
 See the full runnable version in `io.compprov.examples.pi.PiCalculator` (`calculate()`), and
 the side-by-side benchmark in `io.compprov.examples.pi.PiCalculationStress`.
 
+The same folding pattern also handles integrands where rejection sampling doesn't apply — see
+`io.compprov.examples.pi.MonteCarloArcsineIntegrationStress`, which estimates `pi` via the
+average-value method on `f(x) = 1/sqrt(1-x^2)` (unbounded as `x -> 1`, so no finite bounding box
+exists for rejection sampling).
+
 ### Concurrency
 
 `WrappedSubgraph` exposes two ways to invoke the folded template, trading memory for
@@ -266,7 +271,9 @@ parallelism:
 - **`executeConcurrent(args, resultDescriptor)`** allocates a fresh `MutableState` — a full copy
   of the template's intermediate variables — for every call, so independent invocations never
   contend on shared state and can run truly in parallel. The tradeoff is one extra
-  allocation-and-copy per call.
+  allocation-and-copy per call. See `io.compprov.examples.pi.MonteCarloArcsineIntegrationStressParallel`
+  for a driving loop that submits samples to an `ExecutorService` and calls `executeConcurrent()`
+  from multiple threads.
 
 ### Reproducing intermediate steps
 
@@ -450,6 +457,9 @@ If you use a custom type frequently, extend `DefaultComputationContext` to add a
 
 If custom type requires custom JSON serialization or deserialization, register a
 Jackson serializer/deserializer with the `ObjectMapper` inside your custom `ComputationEnvironment`.
+compprov-core runs on **Jackson 3.x** (`tools.jackson.*`), so custom deserializers implement
+`tools.jackson.databind.deser.std.StdDeserializer` / `ValueDeserializer`, not the Jackson 2.x
+`com.fasterxml.jackson.databind.JsonDeserializer`.
 See `DefaultComputationEnvironment` for examples using `ZonedDateTimeSerializer` and
 `MathContextDeserializer`, and `AmountDeserializer` for a custom-type example registered via
 `environment.registerWrapper(Amount.class, new AmountWrapper(), new AmountDeserializer())`.

@@ -1,15 +1,14 @@
 package io.compprov.core.serde;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import io.compprov.core.Snapshot;
 import io.compprov.core.variable.VariableTrack;
 import io.compprov.core.variable.VariableWrapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,13 +24,12 @@ public class VariableDeserializer extends StdDeserializer<Snapshot.Variable> {
     }
 
     @Override
-    public Snapshot.Variable deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-        ObjectMapper mapper = (ObjectMapper) p.getCodec();
-        JsonNode node = mapper.readTree(p);
+    public Snapshot.Variable deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
+        JsonNode node = ctxt.readTree(p);
 
-        VariableTrack track = mapper.convertValue(node.path("track"), VariableTrack.class);
+        VariableTrack track = ctxt.readTreeAsValue(node.path("track"), VariableTrack.class);
         Class<?> valueClass = checkValueClassWrapper(track.getValueClass());
-        Object value = mapper.convertValue(node.path("value"), valueClass);
+        Object value = ctxt.readTreeAsValue(node.path("value"), valueClass);
 
         return new Snapshot.Variable(track, value);
     }

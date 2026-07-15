@@ -159,4 +159,9 @@ public class Subgraph {
             this.value = variable.getValue();
         }
     }
+
+    @Override
+    public String toString() {
+        return "Subgraph of " + resultId + argumentIds;
+    }
 }

@@ -35,9 +35,9 @@ public class PiCalculationStress {
         BigDecimal warmUpAmount = BigDecimal.valueOf(totalPointsMax);
         calculatePure(warmUpAmount);
         calculateCompProv(warmUpAmount);
-        calculateCompProvWithFragmentation(warmUpAmount);
+        calculateCompProvFolded(warmUpAmount);
 
-        System.out.println("N\tJPC time\tCompProv time\tCompProv frag time\tCPG memory\tCPG frag memory");
+        System.out.println("N\tJPC time\tCompProv time\tCompProv folded time\tCPG memory\tCPG folded memory");
         for (int tp = 10000; tp <= totalPointsMax; tp += step) {
             System.gc();
             System.runFinalization();
@@ -50,10 +50,10 @@ public class PiCalculationStress {
             System.runFinalization();
             Thread.sleep(1000);
 
-            final var compProvTimeFragmentation = calculateCompProvWithFragmentation(tpBD);
+            final var compProvTimeFragmentation = calculateCompProvFolded(tpBD);
             final var cpgSize = Files.size(new File("pi.json").toPath());
-            final var cpgFragSize = Files.size(new File("pi_frag.json").toPath());
-            System.out.println("%s\t%s\t%s\t%s\t%s\t%s".formatted(tp, pureTime, compProvTime, compProvTimeFragmentation, cpgSize, cpgFragSize));
+            final var cpgFoldedSize = Files.size(new File("pi_folded.json").toPath());
+            System.out.println("%s\t%s\t%s\t%s\t%s\t%s".formatted(tp, pureTime, compProvTime, compProvTimeFragmentation, cpgSize, cpgFoldedSize));
         }
     }
 
@@ -141,7 +141,7 @@ public class PiCalculationStress {
         return nano;
     }
 
-    public long calculateCompProvWithFragmentation(BigDecimal totalPointsBD) throws IOException {
+    public long calculateCompProvFolded(BigDecimal totalPointsBD) throws IOException {
 
         long nano = System.nanoTime();
 
@@ -200,7 +200,7 @@ public class PiCalculationStress {
 
         nano = System.nanoTime() - nano;
 
-        final var fos = new FileOutputStream("pi_frag.json");
+        final var fos = new FileOutputStream("pi_folded.json");
         final var snapshot = ctx.snapshot();
         final var nodes = snapshot.variables().size() + snapshot.operations().size();
         final var edges = snapshot.operations().size() + snapshot.operations().stream().mapToInt(operation -> operation.arguments().size()).sum();
