@@ -6,6 +6,7 @@ public final class Descriptor {
 
     private final String name;
     private final Meta meta;
+    private int hash;
 
     public Descriptor(String name, Meta meta) {
         this.name = Objects.requireNonNull(name, "name");
@@ -46,6 +47,9 @@ public final class Descriptor {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, meta);
+        if (hash == 0) {
+            hash = Objects.hash(name, meta);
+        }
+        return hash;
     }
 }

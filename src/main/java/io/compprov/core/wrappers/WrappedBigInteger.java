@@ -2,15 +2,15 @@ package io.compprov.core.wrappers;
 
 import io.compprov.core.ComputationContext;
 import io.compprov.core.meta.Descriptor;
+import io.compprov.core.operation.WrappedArgument;
 import io.compprov.core.variable.AbstractWrappedVariable;
 import io.compprov.core.variable.VariableTrack;
-import io.compprov.core.variable.WrappedVariable;
 import io.compprov.core.wrappers.primitive.WrappedInteger;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,6 +54,7 @@ public final class WrappedBigInteger extends AbstractWrappedVariable<BigInteger>
     private static final Descriptor OP_MAX_BULK = Descriptor.descriptor("maxBulk", formula("max(a,b0,...,bn)"));
     private static final Descriptor OP_MIN_BULK = Descriptor.descriptor("minBulk", formula("min(a,b0,...,bn)"));
     private static final Descriptor OP_COMPARE = Descriptor.descriptor("compare", formula("a.compare(b)"));
+    private static final Descriptor OP_ARRAY = Descriptor.descriptor("array", formula("array(a,b0,...,bn)"));
 
     private static final Map<Descriptor, Function<List<Object>, Object>> functionsMap;
 
@@ -251,6 +252,14 @@ public final class WrappedBigInteger extends AbstractWrappedVariable<BigInteger>
             BigInteger a = (BigInteger) arguments.get(0);
             BigInteger b = (BigInteger) arguments.get(1);
             return BigInteger.valueOf(a.compareTo(b));
+        });
+
+        functions.put(OP_ARRAY, (arguments) -> {
+            BigInteger[] result = new BigInteger[arguments.size()];
+            for (int i = 0; i < arguments.size(); i++) {
+                result[i] = (BigInteger) arguments.get(i);
+            }
+            return result;
         });
 
         functionsMap = Collections.unmodifiableMap(functions);
@@ -486,10 +495,10 @@ public final class WrappedBigInteger extends AbstractWrappedVariable<BigInteger>
 
     public WrappedBigInteger addBulk(List<WrappedBigInteger> values, Descriptor resultDescriptor) {
         Objects.requireNonNull(values, "val");
-        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
-        arguments.put("a", this);
+        final var arguments = new ArrayList<WrappedArgument>(values.size() + 1);
+        arguments.add(new WrappedArgument("a", this));
         for (int i = 0; i < values.size(); i++) {
-            arguments.put("b" + i, values.get(i));
+            arguments.add(new WrappedArgument("b" + i, values.get(i)));
         }
         return (WrappedBigInteger) execute(
                 OP_ADD_BULK,
@@ -499,10 +508,10 @@ public final class WrappedBigInteger extends AbstractWrappedVariable<BigInteger>
 
     public WrappedBigInteger multiplyBulk(List<WrappedBigInteger> values, Descriptor resultDescriptor) {
         Objects.requireNonNull(values, "val");
-        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
-        arguments.put("a", this);
+        final var arguments = new ArrayList<WrappedArgument>(values.size() + 1);
+        arguments.add(new WrappedArgument("a", this));
         for (int i = 0; i < values.size(); i++) {
-            arguments.put("b" + i, values.get(i));
+            arguments.add(new WrappedArgument("b" + i, values.get(i)));
         }
         return (WrappedBigInteger) execute(
                 OP_MULTIPLY_BULK,
@@ -512,10 +521,10 @@ public final class WrappedBigInteger extends AbstractWrappedVariable<BigInteger>
 
     public WrappedBigInteger subtractBulk(List<WrappedBigInteger> values, Descriptor resultDescriptor) {
         Objects.requireNonNull(values, "val");
-        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
-        arguments.put("a", this);
+        final var arguments = new ArrayList<WrappedArgument>(values.size() + 1);
+        arguments.add(new WrappedArgument("a", this));
         for (int i = 0; i < values.size(); i++) {
-            arguments.put("b" + i, values.get(i));
+            arguments.add(new WrappedArgument("b" + i, values.get(i)));
         }
         return (WrappedBigInteger) execute(
                 OP_SUBTRACT_BULK,
@@ -525,20 +534,20 @@ public final class WrappedBigInteger extends AbstractWrappedVariable<BigInteger>
 
     public WrappedBigInteger maxBulk(List<WrappedBigInteger> values, Descriptor resultDescriptor) {
         Objects.requireNonNull(values, "values");
-        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
-        arguments.put("a", this);
+        final var arguments = new ArrayList<WrappedArgument>(values.size() + 1);
+        arguments.add(new WrappedArgument("a", this));
         for (int i = 0; i < values.size(); i++) {
-            arguments.put("b" + i, values.get(i));
+            arguments.add(new WrappedArgument("b" + i, values.get(i)));
         }
         return (WrappedBigInteger) execute(OP_MAX_BULK, arguments, resultDescriptor);
     }
 
     public WrappedBigInteger minBulk(List<WrappedBigInteger> values, Descriptor resultDescriptor) {
         Objects.requireNonNull(values, "values");
-        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
-        arguments.put("a", this);
+        final var arguments = new ArrayList<WrappedArgument>(values.size() + 1);
+        arguments.add(new WrappedArgument("a", this));
         for (int i = 0; i < values.size(); i++) {
-            arguments.put("b" + i, values.get(i));
+            arguments.add(new WrappedArgument("b" + i, values.get(i)));
         }
         return (WrappedBigInteger) execute(OP_MIN_BULK, arguments, resultDescriptor);
     }
@@ -550,5 +559,15 @@ public final class WrappedBigInteger extends AbstractWrappedVariable<BigInteger>
                 "a", this,
                 "b", b,
                 resultDescriptor);
+    }
+
+    public WrappedBigIntegers array(List<WrappedBigInteger> values, Descriptor resultDescriptor) {
+        Objects.requireNonNull(values, "values");
+        final var arguments = new ArrayList<WrappedArgument>(values.size() + 1);
+        arguments.add(new WrappedArgument("a", this));
+        for (int i = 0; i < values.size(); i++) {
+            arguments.add(new WrappedArgument("b" + i, values.get(i)));
+        }
+        return (WrappedBigIntegers) execute(OP_ARRAY, arguments, resultDescriptor);
     }
 }

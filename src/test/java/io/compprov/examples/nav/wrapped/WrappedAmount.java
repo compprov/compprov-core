@@ -2,14 +2,18 @@ package io.compprov.examples.nav.wrapped;
 
 import io.compprov.core.ComputationContext;
 import io.compprov.core.meta.Descriptor;
+import io.compprov.core.operation.WrappedArgument;
 import io.compprov.core.variable.AbstractWrappedVariable;
 import io.compprov.core.variable.VariableTrack;
-import io.compprov.core.variable.WrappedVariable;
 import io.compprov.examples.nav.model.Amount;
 import io.compprov.examples.nav.model.Rate;
 
-import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static io.compprov.core.meta.Meta.formula;
@@ -76,10 +80,10 @@ public class WrappedAmount extends AbstractWrappedVariable<Amount> {
 
     public WrappedAmount addBulk(List<WrappedAmount> values, Descriptor resultDescriptor) {
         Objects.requireNonNull(values, "val");
-        LinkedHashMap<String, WrappedVariable> arguments = new LinkedHashMap<>();
-        arguments.put("a", this);
+        final var arguments = new ArrayList<WrappedArgument>(values.size() + 1);
+        arguments.add(new WrappedArgument("a", this));
         for (int i = 0; i < values.size(); i++) {
-            arguments.put("b" + i, values.get(i));
+            arguments.add(new WrappedArgument("b" + i, values.get(i)));
         }
         return (WrappedAmount) execute(
                 OP_ADD_BULK,

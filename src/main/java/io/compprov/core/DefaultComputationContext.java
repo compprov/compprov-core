@@ -2,7 +2,9 @@ package io.compprov.core;
 
 import io.compprov.core.meta.Descriptor;
 import io.compprov.core.wrappers.WrappedBigDecimal;
+import io.compprov.core.wrappers.WrappedBigDecimals;
 import io.compprov.core.wrappers.WrappedBigInteger;
+import io.compprov.core.wrappers.WrappedBigIntegers;
 import io.compprov.core.wrappers.WrappedMathContext;
 import io.compprov.core.wrappers.primitive.WrappedInteger;
 import io.compprov.core.wrappers.subgraph.WrappedSubgraph;
@@ -70,5 +72,13 @@ public class DefaultComputationContext extends ComputationContext {
 
     public WrappedSubgraph wrapSubgraph(Subgraph value, Descriptor descriptor) {
         return (WrappedSubgraph) super.wrap(value, descriptor);
+    }
+
+    public WrappedBigDecimals wrapBigDecimals(BigDecimal[] value, Descriptor descriptor) {
+        return (WrappedBigDecimals) super.wrap(value, descriptor);
+    }
+
+    public WrappedBigIntegers wrapBigIntegers(BigInteger[] value, Descriptor descriptor) {
+        return (WrappedBigIntegers) super.wrap(value, descriptor);
     }
 }

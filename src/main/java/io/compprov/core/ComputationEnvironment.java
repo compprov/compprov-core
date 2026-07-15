@@ -138,8 +138,8 @@ public class ComputationEnvironment {
                             operation.arguments()
                                     .stream()
                                     .map(pair -> "%s=%s".formatted(
-                                            pair.key(),
-                                            pair.value()))
+                                            pair.metaName(),
+                                            pair.variableId()))
                                     .toList()
                     ));
                     stringBuilder.append("->");
@@ -151,8 +151,8 @@ public class ComputationEnvironment {
                             operation.arguments()
                                     .stream()
                                     .map(pair -> "%s=%s".formatted(
-                                            pair.key(),
-                                            variableMap.get(pair.value()).track().getDescriptor().getName()))
+                                            pair.metaName(),
+                                            variableMap.get(pair.variableId()).track().getDescriptor().getName()))
                                     .toList()
                     ));
                     stringBuilder.append("->");
@@ -164,8 +164,8 @@ public class ComputationEnvironment {
                             operation.arguments()
                                     .stream()
                                     .map(pair -> "%s=%s".formatted(
-                                            pair.key(),
-                                            variableMap.get(pair.value()).value()))
+                                            pair.metaName(),
+                                            variableMap.get(pair.variableId()).value()))
                                     .toList()
                     ));
                     stringBuilder.append("->");

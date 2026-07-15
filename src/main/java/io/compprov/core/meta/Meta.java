@@ -13,6 +13,7 @@ public final class Meta {
     public static final Meta NO_META = new Meta(new LinkedHashMap<>());
 
     private final LinkedHashMap<String, Object> parameters;
+    private int hash;
 
     public Meta(LinkedHashMap<String, Object> parameters) {
         Objects.requireNonNull(parameters, "parameters");
@@ -99,6 +100,9 @@ public final class Meta {
 
     @Override
     public int hashCode() {
-        return Objects.hash(parameters);
+        if (hash == 0) {
+            hash = Objects.hash(parameters);
+        }
+        return hash;
     }
 }

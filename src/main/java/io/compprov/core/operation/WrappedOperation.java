@@ -1,22 +1,21 @@
 package io.compprov.core.operation;
 
 import io.compprov.core.Snapshot;
-import io.compprov.core.meta.Pair;
 
-import java.util.LinkedHashMap;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class WrappedOperation {
 
     private final OperationTrack operationTrack;
-    private final LinkedHashMap<String, String> arguments;//name=variableId
+    private final List<? extends OperationArgument> arguments;//{name,variableId}
     private final String resultId;
 
     public WrappedOperation(OperationTrack operationTrack,
-                            LinkedHashMap<String, String> arguments, String resultId) {
+                            List<? extends OperationArgument> arguments, String resultId) {
         this.operationTrack = Objects.requireNonNull(operationTrack);
-        this.arguments = new LinkedHashMap<>();
-        this.arguments.putAll(arguments);
+        this.arguments = Collections.unmodifiableList(arguments);
         this.resultId = Objects.requireNonNull(resultId);
         if (arguments.isEmpty()) {
             throw new IllegalArgumentException("Operation must contain at least one argument");
@@ -25,7 +24,7 @@ public class WrappedOperation {
 
     public static WrappedOperation operation(
             OperationTrack operationTrack,
-            LinkedHashMap<String, String> arguments,
+            List<? extends OperationArgument> arguments,
             String resultId) {
         return new WrappedOperation(operationTrack, arguments, resultId);
     }
@@ -39,10 +38,8 @@ public class WrappedOperation {
      *
      * @return
      */
-    public LinkedHashMap<String, String> getArguments() {
-        final var result = new LinkedHashMap<String, String>();
-        result.putAll(arguments);
-        return result;
+    public List<? extends OperationArgument> getArguments() {
+        return arguments;
     }
 
     public String getResultId() {
@@ -51,10 +48,7 @@ public class WrappedOperation {
 
     public Snapshot.Operation snapshot() {
         return new Snapshot.Operation(operationTrack,
-                arguments.entrySet()
-                        .stream()
-                        .map(entry -> new Pair(entry.getKey(), entry.getValue()))
-                        .toList(),
+                arguments.stream().map(arg -> new WrappedArgumentId(arg.metaName(), arg.variableId())).toList(),
                 resultId);
     }
 }

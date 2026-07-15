@@ -14,7 +14,9 @@ import io.compprov.core.serde.VariableTrackDeserializer;
 import io.compprov.core.serde.ZonedDateTimeSerializer;
 import io.compprov.core.variable.VariableTrack;
 import io.compprov.core.wrappers.BigDecimalWrapper;
+import io.compprov.core.wrappers.BigDecimalsWrapper;
 import io.compprov.core.wrappers.BigIntegerWrapper;
+import io.compprov.core.wrappers.BigIntegersWrapper;
 import io.compprov.core.wrappers.MathContextWrapper;
 import io.compprov.core.wrappers.primitive.IntegerWrapper;
 import io.compprov.core.wrappers.primitive.LongWrapper;
@@ -76,7 +78,8 @@ public class DefaultComputationEnvironment extends ComputationEnvironment {
         registerWrapper(Long.class, new LongWrapper());
         registerWrapper(MathContext.class, new MathContextWrapper());
         registerWrapper(Subgraph.class, new SubgraphWrapper());
-
+        registerWrapper(BigDecimal[].class, new BigDecimalsWrapper());
+        registerWrapper(BigInteger[].class, new BigIntegersWrapper());
     }
 
     private void configureMapper() {
