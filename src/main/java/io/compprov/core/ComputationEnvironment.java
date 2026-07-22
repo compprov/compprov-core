@@ -6,6 +6,7 @@ import io.compprov.core.variable.VariableKind;
 import io.compprov.core.variable.VariableTrack;
 import io.compprov.core.variable.VariableWrapper;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JacksonModule;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.module.SimpleModule;
@@ -63,6 +64,14 @@ public class ComputationEnvironment {
         SimpleModule module = new SimpleModule();
         module.addDeserializer(type, deserializer);
         mapper = mapper.rebuild().addModule(module).build();
+    }
+
+    public synchronized <T> void registerWrapper(Class<T> type, VariableWrapper<T> wrapper, JacksonModule jacksonModule) {
+        Objects.requireNonNull(type, "type");
+        Objects.requireNonNull(wrapper, "wrapper");
+        Objects.requireNonNull(jacksonModule, "jacksonModule");
+        wrappers.put(type, wrapper);
+        mapper = mapper.rebuild().addModule(jacksonModule).build();
     }
 
     public String toJson(Snapshot snapshot) {
