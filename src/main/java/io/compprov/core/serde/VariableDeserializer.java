@@ -5,6 +5,7 @@ import io.compprov.core.variable.VariableTrack;
 import io.compprov.core.variable.VariableWrapper;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DatabindException;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.deser.std.StdDeserializer;
@@ -28,25 +29,25 @@ public class VariableDeserializer extends StdDeserializer<Snapshot.Variable> {
         JsonNode node = ctxt.readTree(p);
 
         VariableTrack track = ctxt.readTreeAsValue(node.path("track"), VariableTrack.class);
-        Class<?> valueClass = checkValueClassWrapper(track.getValueClass());
+        Class<?> valueClass = checkValueClassWrapper(p, track.getValueClass());
         Object value = ctxt.readTreeAsValue(node.path("value"), valueClass);
 
         return new Snapshot.Variable(track, value);
     }
 
-    private Class<?> checkValueClassWrapper(String className) {
+    private Class<?> checkValueClassWrapper(JsonParser p, String className) {
 
         var valueClass = wrapperClasses.get(className);
         if (valueClass != null) {
             return valueClass;
         }
 
-        valueClass = wrappers.keySet().stream()
-                .filter(c -> c.getName().equals(className))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unknown value class: " + className));
-        wrapperClasses.put(className, valueClass);
-
-        return valueClass;
+        for (var clazz : wrappers.keySet()) {
+            if (clazz.getName().equals(className)) {
+                wrapperClasses.put(className, clazz);
+                return clazz;
+            }
+        }
+        throw DatabindException.from(p, "Unknown value class: " + className);
     }
 }
