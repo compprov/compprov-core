@@ -5,10 +5,19 @@
 in a computation as it runs. The result is a complete, machine-readable audit trail of how each
 output was derived from its inputs.
 
+Most provenance tooling — workflow managers, data lineage graphs, PROV-style trackers — operates
+one level too high: it can show that dataset B was produced from dataset A by process P, but it
+records nothing about what happened *inside* P. The arithmetic itself — every intermediate value,
+every coefficient, every rounding decision — goes unrecorded. compprov captures lineage at the
+arithmetic level instead: wrapping a value is what makes it trackable, so nothing entering a
+computation can bypass the audit trail by omission, and the result is a CPG that persists as a
+self-contained artifact rather than a discarded byproduct.
+
 ---
 
 ## Contents
 
+- [Why compprov](#why-compprov)
 - [Core concepts](#core-concepts)
 - [Getting started](#getting-started)
 - [Usage example](#usage-example)
@@ -20,6 +29,79 @@ output was derived from its inputs.
 - [Visualization](#visualization)
 - [Examples](#examples)
 - [License](#license)
+
+---
+
+## Why compprov
+
+### Commercial computation: auditing without disclosing source code
+
+In finance and other regulated domains, "trust the output" is not an acceptable audit posture,
+but "hand over the source code" is usually not on the table either — the calculation logic is
+the intellectual property. compprov is built around a middle path: wrap the domain types
+(`Amount`, `Rate`, position sizes, whatever the business model already uses) without modifying
+them, and let the CPG accumulate as a byproduct of running the real computation.
+
+The [NAV example](#net-asset-value-nav) in this repo demonstrates the pattern end-to-end: a
+multi-asset crypto-portfolio valuation (BTC, ETH, USDC held across Binance, staking, and Morpho)
+is wrapped through custom `WrappedAmount` / `WrappedRate` types, producing a CPG that can be
+serialized, handed to an auditor, and replayed in a fresh environment — reproducing the exact
+total to the cent — without shipping the proprietary valuation code itself. The auditor gets a
+`convert`/`addBulk` operation trail with every exchange rate, timestamp, and intermediate USD
+value attached; they don't get (and don't need) the pricing engine.
+
+The same CPG also supports **sensitivity analysis via input substitution**: `copyWith()` swaps
+one or more `INPUT`-kind variables (e.g. the BTC/USD, ETH/USD, USDC/USD rates) and replays the
+graph to see how the total propagates, without touching the source that produced the original
+snapshot. This turns "what would this valuation have been under different market conditions" from
+a request to re-run internal systems into a query an external party can run against an exported
+artifact.
+
+### A finer-grained audit trail than logging gives you
+
+Application logs and workflow-level lineage record that a step ran and roughly what it touched;
+they rarely record the specific coefficients, intermediate roundings, or substitutions that
+produced a number. Because every `execute()` call in compprov is what creates a tracked variable
+and operation node — not an optional side-effect a developer has to remember to add — a CPG
+cannot have a silent gap where a value was used but never logged.
+
+This matters most when the gap is discovered after the fact. Reconstructing the interferometric
+[gauge block calibration](#gauge-block-calibration) example in this repo from its source
+publication surfaced exactly this: 7 of the 13 required inputs (air temperature, pressure,
+humidity, CO₂ concentration, the fringe orders, part temperature) were never published alongside
+the reported result. A file- or pipeline-level provenance system has no way to expose that kind
+of gap, because it never looks inside the calculation to begin with. compprov's structure forces
+the question to be answered explicitly for every input, which is what makes a reconstruction like
+this auditable rather than just plausible — see the code and `Descriptor` metadata in
+`GaugeBlockCalibration` for how each assumed or back-calculated input is documented inline.
+
+### Mitigating software decay
+
+Regulated and scientific computations are routinely re-audited years after they ran, by which
+point the original library versions, runtime, or even the source repository may no longer build.
+Re-establishing "what actually happened" by reconstructing that legacy environment is expensive
+and often impossible. A `Snapshot` sidesteps this: every variable value, its full metadata, and
+the chronologically ordered operation sequence are embedded in one serializable JSON artifact —
+so interpreting *what a computation did* never depends on resurrecting the environment that ran
+it.
+
+*Replaying* that snapshot to reproduce the computed values is a narrower guarantee than reading
+it: `env.compute()` needs the compprov runtime and, for any custom types involved, the
+corresponding wrapper classes registered in the target environment (see
+[Extending with custom type wrappers](#extending-with-custom-type-wrappers)). What deterministic
+replay eliminates is the dependency on the original proprietary orchestration code — not on
+compprov itself. For computations built entirely on the built-in `BigDecimal`/`BigInteger`
+wrappers, the snapshot is fully self-contained and replayable with nothing beyond
+compprov-core on the classpath.
+
+### When compprov is (and isn't) a good fit
+
+| Good fit | Poor fit |
+|---|---|
+| Financial/NAV, valuation, and pricing calculations that need third-party audit without source disclosure | Millions-of-iterations numerical simulations (climate, CFD, molecular dynamics) — CPG size and tracking overhead scale with recorded operations; use [subgraph folding](#subgraph-folding-scaling-cyclic-computations) and expect it to still be the wrong tool at that scale |
+| Regulated measurement / metrology pipelines where every input's provenance (measured, assumed, back-calculated) must be explicit | Hot-path / latency-sensitive numeric code where even the folded overhead (~2×–6× in this repo's benchmarks) isn't acceptable |
+| Scientific reproductions where the original inputs or derivation steps were incompletely published, and documenting *what was assumed* is itself the deliverable | Non-deterministic external state you need re-verified on replay (a re-fetched market price, a live sensor reading) — a snapshot captures such values as immutable inputs at the moment they were wrapped, it does not re-query them |
+| Long-horizon audit trails that must outlive the software/runtime that produced them | Codebases not yet on Java 17+/23, or where introducing wrapper types throughout the calculation path isn't feasible |
 
 ---
 
