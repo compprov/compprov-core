@@ -101,7 +101,7 @@ compprov-core on the classpath.
 | Financial/NAV, valuation, and pricing calculations that need third-party audit without source disclosure | Millions-of-iterations numerical simulations (climate, CFD, molecular dynamics) — CPG size and tracking overhead scale with recorded operations; use [subgraph folding](#subgraph-folding-scaling-cyclic-computations) and expect it to still be the wrong tool at that scale |
 | Regulated measurement / metrology pipelines where every input's provenance (measured, assumed, back-calculated) must be explicit | Hot-path / latency-sensitive numeric code where even the folded overhead (~2×–6× in this repo's benchmarks) isn't acceptable |
 | Scientific reproductions where the original inputs or derivation steps were incompletely published, and documenting *what was assumed* is itself the deliverable | Non-deterministic external state you need re-verified on replay (a re-fetched market price, a live sensor reading) — a snapshot captures such values as immutable inputs at the moment they were wrapped, it does not re-query them |
-| Long-horizon audit trails that must outlive the software/runtime that produced them | Codebases not yet on Java 17+/23, or where introducing wrapper types throughout the calculation path isn't feasible |
+| Long-horizon audit trails that must outlive the software/runtime that produced them | Codebases not yet on Java 17+, or where introducing wrapper types throughout the calculation path isn't feasible |
 
 ---
 
