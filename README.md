@@ -709,6 +709,24 @@ Verifier.VerifiedData result = verifier.verify(jadesJson);
 `compprov-trust` is a separate module: it signs and verifies the JSON string a `Snapshot`
 serializes to, and has no dependency on compprov-core's internal types.
 
+Signing proves a snapshot wasn't altered after export; it says nothing about whether the
+computation it records was manipulated in the first place. [compprov-analytics](https://github.com/compprov/compprov-analytics)
+is a separate CLI that audits a CPG for exactly that: deterministic structural checks (replay
+mismatches, double-counting, selective rounding, broken chronology) plus optional LLM-driven
+fraud-pattern analysis. It's a standalone, more experimental tool — its verdicts are advisory,
+not a certification.
+
+```bash
+java -jar compprov-analytics.jar --cpgpath=snapshot.json
+```
+
+With no other flags, this runs the deterministic checks against `snapshot.json` and writes a
+timestamped report directory (`summary.md` plus per-check JSON) next to where it's run. The
+default fraud-pattern prompts are generated either way: without a plugin supplying a chat model,
+they're rendered as standalone markdown files instead of being executed automatically, ready to
+run by hand or hand off to an agent (e.g. Claude) against the LLM of your choice — a plugin is
+only needed to wire up custom-type wrappers or auto-execute those prompts via a chat model.
+
 ---
 
 ## Examples
