@@ -27,6 +27,7 @@ self-contained artifact rather than a discarded byproduct.
 - [Built-in types](#built-in-types)
 - [Thread safety](#thread-safety)
 - [Visualization](#visualization)
+- [Tamper-evident signing](#tamper-evident-signing)
 - [Examples](#examples)
 - [License](#license)
 
@@ -93,6 +94,11 @@ replay eliminates is the dependency on the original proprietary orchestration co
 compprov itself. For computations built entirely on the built-in `BigDecimal`/`BigInteger`
 wrappers, the snapshot is fully self-contained and replayable with nothing beyond
 compprov-core on the classpath.
+
+A `Snapshot` surviving its original environment is a readability guarantee, not an integrity
+one — nothing stops the JSON from being edited after export. See
+[Tamper-evident signing](#tamper-evident-signing) for [compprov-trust](https://github.com/compprov/compprov-trust),
+which extends the same long-horizon guarantee to the artifact's authenticity.
 
 ### When compprov is (and isn't) a good fit
 
@@ -670,6 +676,38 @@ Plots numeric variable values across one or more datasets side-by-side.
 Supports points, line, and table views with configurable X-axis labels.
 
 ![Plot View](https://raw.githubusercontent.com/compprov/compprov-render/master/screenshots/plot.png)
+
+---
+
+## Tamper-evident signing
+
+A `Snapshot`'s JSON proves *what* a computation did; on its own it proves nothing about *who*
+produced it, *when*, or whether it was edited after export. [compprov-trust](https://github.com/compprov/compprov-trust)
+closes that gap by wrapping the JSON in an **enveloping JAdES Baseline-LT** signature — an
+eIDAS-aligned standard built on [SD-DSS](https://github.com/esig/dss) — embedding the signer's
+X.509 certificate chain and an RFC 3161 cryptographic timestamp from an external Time-Stamping
+Authority alongside the payload. Baseline-LT specifically embeds revocation data at signing
+time, so the signature stays verifiable years later even after the signer's certificate has
+since expired or been revoked — the same long-horizon guarantee [Mitigating software
+decay](#mitigating-software-decay) makes for the Snapshot format itself, extended to the
+signature.
+
+```java
+// Sign a snapshot's JSON
+Pkcs12SignatureToken token = Signer.loadPkcs12(p12Stream, password);
+Signer signer = new Signer(token, "http://timestamp.digicert.com", trustSource);
+String jadesJson = signer.signJson(env.toJson(ctx.snapshot()), false);
+
+// Verify it later, before trusting or replaying the payload
+Verifier verifier = new Verifier(trust);
+Verifier.VerifiedData result = verifier.verify(jadesJson);
+// result.signedTimestamp() / result.signerChain() / result.tspChain() confirm who signed,
+// when, and that the certificate chain is trusted -- checked before the payload is ever
+// deserialized into a Snapshot and replayed.
+```
+
+`compprov-trust` is a separate module: it signs and verifies the JSON string a `Snapshot`
+serializes to, and has no dependency on compprov-core's internal types.
 
 ---
 
