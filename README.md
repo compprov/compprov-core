@@ -277,6 +277,17 @@ The same reduction applies to memory while the computation is running: `Computat
 keeps every recorded variable and operation in memory until `snapshot()` is called, so fewer
 recorded nodes per cycle means a smaller live heap footprint, not just a smaller export.
 
+Execution time improves too, but by less — folding removes tracking overhead, not the
+underlying arithmetic. Normalized per 1,000 tracked operations across the full N range, the
+median relative overhead is **10.44× native** un-folded and **5.84× native** folded for this
+benchmark's lightweight per-point payload (2 inputs, 5 operations per point: `pow`, `pow`,
+`add`, `setScale`, `subtract`). That **~6×** is the *high* end of the
+[poor fit](#when-compprov-is-and-isnt-a-good-fit) row's "~2×–6× folded overhead" figure — the
+low end (**~2×**) comes from a heavier-payload benchmark, not this one; see
+[Concurrency](#concurrency) below. Relative overhead falls as the per-operation payload gets
+more expensive, because folding's absolute tracking cost per operation stays roughly constant
+while native execution time per operation grows.
+
 ### How it works
 
 1. **Build the template once**, normally, in its own disposable `ComputationContext`. This
@@ -402,6 +413,15 @@ parallelism:
   allocation-and-copy per call. See `io.compprov.examples.pi.MonteCarloArcsineIntegrationStressParallel`
   for a driving loop that submits samples to an `ExecutorService` and calls `executeConcurrent()`
   from multiple threads.
+
+  This benchmark's per-point payload is heavier than the Pi rejection-sampling one above (1
+  input, 4 operations per point, evaluating `1/sqrt(1-x²)`), which is why its folded relative
+  overhead is lower: a **2.13× median** (range 1.66×–3.76×) single-threaded, versus the ~6×
+  median for the lighter Pi payload above. Going from 1 to 4 threads, native execution speeds
+  up **2.47× median** while folded `executeConcurrent()` speeds up **2.39× median** —
+  essentially the same factor — and the relative tracing overhead barely moves (2.13× at 1
+  thread vs. 2.19× median at 4 threads), so `executeConcurrent()`'s per-call cost doesn't
+  compound as concurrency increases.
 
 ### Reproducing intermediate steps
 
@@ -668,11 +688,11 @@ a different aspect of the framework.
 
 ### Net Asset Value (NAV)
 
-**`io.compprov.examples.nav`** · `NetAssetValueCalculator.calculate()`
+**`io.compprov.examples.nav`** · `NetAssetValueCalculator`
 
 Computes the total USD value of a multi-asset crypto portfolio (BTC, ETH, USDC positions held
 across Binance, staking, and Morpho DeFi) by converting each position to USD at a spot rate
-and summing the results.
+and summing the results. `calculate()` asserts the total: **431,749.17 USD**.
 
 The primary focus is showing **how to wrap custom domain types**. The domain model uses `Amount`
 and `Rate` objects rather than raw `BigDecimal`, and the example integrates them with the
@@ -686,9 +706,24 @@ framework without modifying them — using the three-step pattern:
    the shared `ComputationEnvironment`, and exposes typed `wrap(Amount, ...)` / `wrap(Rate, ...)`
    convenience overloads.
 
-After the calculation the snapshot is serialized to JSON, then deserialized and replayed via
-`NavComputationContext.environment.compute()` — verifying that the CPG is round-trip stable and the
-replayed output matches the original result.
+Two stored snapshot fixtures, `snapshots/nav_v0.1.json` and `snapshots/nav_v0.2.json`, capture
+the *same* NAV calculation as serialized by two different compprov-core releases — the JSON
+snapshot format itself changed between v0.1.x and v0.2.x. Loading both through the *current*
+`ComputationEnvironment` is a backward-compatibility check: a snapshot produced by an older
+version of the library must still deserialize and replay correctly today, which matters directly
+for the [software-decay](#mitigating-software-decay) pitch — a stored CPG needs to outlive not
+just the original computation's environment, but the compprov format itself as it evolves.
+
+- **`reproduce_v01()` / `reproduce_v02()`** deserialize each stored snapshot and replay it via
+  `NavComputationContext.environment.compute()`, both asserting the same 431,749.17 USD total —
+  confirming that both JSON generations round-trip and replay deterministically under the
+  current runtime.
+- **`simulate_v01()` / `simulate_v02()`** take those same two snapshots and use `copyWith()` to
+  substitute the BTC/ETH/USDC spot rates with new `INPUT` values before replaying — a concrete
+  instance of the **sensitivity analysis via input substitution** pattern from
+  [Why compprov](#commercial-computation-auditing-without-disclosing-source-code): both assert
+  the portfolio revalues to **439,829.22 USD** under the substituted rates, confirming input
+  substitution works identically regardless of which format version the snapshot was loaded from.
 
 ---
 
@@ -725,7 +760,7 @@ showing that the framework handles complex pure-scalar formula chains out of the
 
 ### Hydrological Model Evaluation
 
-**`io.compprov.examples.hydrology`** · `MhmDischargeEvaluation.evaluateParameterSetP1()`
+**`io.compprov.examples.hydrology`** · `MhmDischargeEvaluation`
 
 Evaluates the mesoscale Hydrologic Model (mHM) output against observed river discharge at the
 Moselle River basin upstream of Perl (~11 500 km², Luxembourg/Germany), as described in:
@@ -745,14 +780,25 @@ KGE = 1 − √[ (r−1)² + (α−1)² + (β−1)² ]
 ```
 
 KGE = 1 is perfect; values below 0 indicate the model is worse than the observed mean as a
-predictor. The paper reports that parameter set P₁ outperforms P₂ with scores mostly above 0.5.
+predictor.
 
-The computation uses `ArrayList<WrappedBigDecimal>` with loops and `addBulk`, demonstrating the
-pattern for **list-based tracked operations** where the number of time steps is dynamic.
-The 8-step chain (means → deviations → squared deviations and cross products → sums → r → α
-→ β → KGE) is fully recorded in the CPG, with every intermediate quantity named and traceable.
-The synthetic dataset is engineered so that r = 1, β = 1, α = 0.9, giving **KGE = 0.9 exactly**,
-verified by exact `BigDecimal` equality.
+**`evaluateSimulation00()`** computes the full 8-step chain (means → deviations → squared
+deviations and cross products → sums → r → α → β → KGE) for one simulated discharge series
+against the observed series, using `ArrayList<WrappedBigDecimal>` with loops and `addBulk` —
+demonstrating the pattern for **list-based tracked operations** where the number of time steps
+is dynamic. Every intermediate quantity is named and traceable in the CPG; the result is
+asserted to exact `BigDecimal` precision: **KGE = 0.8686859963808819097039722873919439** for
+simulation "00".
+
+**`findBestModelUsingReproducibilityWithSubstitution()`** builds on the same CPG to compare
+several candidate simulations against each other: it loads one stored snapshot
+(`snapshots/hydrology.json`), then for each candidate case uses `copyWith()` to substitute that
+case's discharge series into the snapshot's `INPUT` variables and `compute()` to replay the full
+KGE formula chain against the substitution — without re-deriving it by hand for every candidate.
+Comparing the resulting KGE across cases picks case **"03"** as the best fit, with
+**KGE ≈ 0.9391174691699493751867141555186104**. This is the same input-substitution mechanism
+the [NAV example's rate simulation](#net-asset-value-nav) uses, applied here to sweep over
+candidate models instead of market scenarios.
 
 ---
 

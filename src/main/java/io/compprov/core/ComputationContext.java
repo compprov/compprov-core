@@ -110,7 +110,8 @@ public class ComputationContext {
 
         VariableWrapper wrapper = environment.wrappers.get(value.getClass());
         if (wrapper == null) {
-            throw new IllegalStateException("Wrapper for %s is not found".formatted(value.getClass()));
+            throw new IllegalStateException("Wrapper for %s is not found. Register one via `environment.registerWrapper`"
+                    .formatted(value.getClass()));
         }
 
         int numericId = data.nextVariable();
@@ -130,7 +131,8 @@ public class ComputationContext {
 
         VariableWrapper wrapper = environment.wrappers.get(variable.value().getClass());
         if (wrapper == null) {
-            throw new IllegalStateException("Wrapper for %s is not found".formatted(variable.value().getClass()));
+            throw new IllegalStateException("Wrapper for %s is not found. Register one via `environment.registerWrapper`"
+                    .formatted(variable.value().getClass()));
         }
 
         final var createdAt = variable.track().getKind() == VariableKind.INPUT
