@@ -11,9 +11,13 @@ import java.util.Objects;
 /**
  * Point-in-time snapshot
  */
-public record Snapshot(Descriptor descriptor,
-                       List<Variable> variables,
-                       List<Operation> operations) {
+public record Snapshot(
+        String version,
+        Descriptor descriptor,
+        List<Variable> variables,
+        List<Operation> operations) {
+
+    public static final String CURRENT_VERSION = "1.0";
 
     public record Variable(VariableTrack track, Object value) {
         public Variable {
@@ -34,8 +38,15 @@ public record Snapshot(Descriptor descriptor,
     }
 
     public Snapshot {
+        if (!CURRENT_VERSION.equals(version)) {
+            throw new IllegalArgumentException("Unsupported version: " + version);
+        }
         descriptor = Objects.requireNonNull(descriptor);
         variables = List.copyOf(Objects.requireNonNull(variables));
         operations = List.copyOf(Objects.requireNonNull(operations));
+    }
+
+    public Snapshot(Descriptor descriptor, List<Variable> variables, List<Operation> operations) {
+        this(CURRENT_VERSION, descriptor, variables, operations);
     }
 }

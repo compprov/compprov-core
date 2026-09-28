@@ -7,6 +7,7 @@ import io.compprov.core.serde.DescriptorDeserializer;
 import io.compprov.core.serde.MathContextDeserializer;
 import io.compprov.core.serde.MetaSerializer;
 import io.compprov.core.serde.OperationDeserializer;
+import io.compprov.core.serde.SnapshotDeserializer;
 import io.compprov.core.serde.SubgraphDeserializer;
 import io.compprov.core.serde.SubgraphSerializer;
 import io.compprov.core.serde.VariableDeserializer;
@@ -93,6 +94,7 @@ public class DefaultComputationEnvironment extends ComputationEnvironment {
         module.addDeserializer(Snapshot.Variable.class, new VariableDeserializer(wrappers));
         module.addDeserializer(Snapshot.Operation.class, new OperationDeserializer());
         module.addDeserializer(Subgraph.class, new SubgraphDeserializer(this));
+        module.addDeserializer(Snapshot.class, new SnapshotDeserializer());
         var builder = mapper.rebuild();
         builder.withConfigOverride(BigDecimal.class, o -> o.setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING)));
         builder.withConfigOverride(BigInteger.class, o -> o.setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING)));
