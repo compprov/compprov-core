@@ -157,4 +157,34 @@ public class NetAssetValueCalculator {
         final WrappedAmount simulatedNav = (WrappedAmount) simulation.findSingleVariable("Assets sum");
         assertEquals(new Amount(Currency.USD, new BigDecimal("439829.22")), simulatedNav.getValue());
     }
+
+    @Test
+    public void simulate_v10() throws IOException {
+
+        final var model = NetAssetValueCalculator.class.getResourceAsStream("/snapshots/nav_v1.0.json").readAllBytes();
+        final var snapshot = NavComputationContext.environment.fromJson(model);
+        final var recalculated = NavComputationContext.environment.compute(snapshot);
+
+        final var btcPriceId = recalculated.findSingleVariable("BTC/USD rate").getVariableTrack().getId();
+        final var ethPriceId = recalculated.findSingleVariable("ETH/USD rate").getVariableTrack().getId();
+        final var usdcPriceId = recalculated.findSingleVariable("USDC/USD rate").getVariableTrack().getId();
+        final var btcGrowSimulation = NavComputationContext.environment.copyWith(
+                snapshot,
+                descriptor("Nav with updated prices"),
+                Map.of(btcPriceId, new ValueWithDescriptor(
+                                descriptor("BTC/USD rate", Meta.of("origin", "Simulation")),
+                                new Rate(Currency.BTC, Currency.USD, new BigDecimal("72313.2"))),
+                        ethPriceId, new ValueWithDescriptor(
+                                descriptor("ETH/USD rate", Meta.of("origin", "Simulation")),
+                                new Rate(Currency.ETH, Currency.USD, new BigDecimal("2193.31"))),
+                        usdcPriceId, new ValueWithDescriptor(
+                                descriptor("USDC/USD rate", Meta.of("origin", "Simulation")),
+                                new Rate(Currency.USDC, Currency.USD, new BigDecimal("1.0")))
+                ));
+
+        //simulate
+        final var simulation = NavComputationContext.environment.compute(btcGrowSimulation);
+        final WrappedAmount simulatedNav = (WrappedAmount) simulation.findSingleVariable("Assets sum");
+        assertEquals(new Amount(Currency.USD, new BigDecimal("439829.22")), simulatedNav.getValue());
+    }
 }
