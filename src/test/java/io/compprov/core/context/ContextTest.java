@@ -151,6 +151,21 @@ public class ContextTest {
     }
 
     @Test
+    public void replay_preserves_wrapper_class_name() {
+        final var context = new DefaultComputationContext(
+                environment,
+                new DataContext(Descriptor.descriptor("test")));
+        final var mc = mc(context, 3, RoundingMode.DOWN);
+        final var x = context.wrapBigDecimal(new BigDecimal("1"), Descriptor.descriptor("x"));
+        final var y = context.wrapBigDecimal(new BigDecimal("2"), Descriptor.descriptor("y"));
+        x.add(y, mc, null);
+
+        final var replayed = environment.compute(context.snapshot()).snapshot();
+        assertEquals("io.compprov.core.wrappers.WrappedBigDecimal",
+                replayed.operations().get(0).track().getWrapperClass());
+    }
+
+    @Test
     public void fromJson_restores_variables_and_operations() {
 
         final var ctx = new DefaultComputationContext(

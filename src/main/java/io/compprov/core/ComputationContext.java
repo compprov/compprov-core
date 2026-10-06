@@ -174,7 +174,7 @@ public class ComputationContext {
                         started,
                         finished,
                         opDescriptor,
-                        newResultValue.getClass().getName()),
+                        reWrappedResult.getClass().getName()),
                 operation.arguments(),
                 reWrappedResult.getVariableTrack().getId());
         data.operations.put(wrappedOperation.getOperationTrack().getId(), wrappedOperation);

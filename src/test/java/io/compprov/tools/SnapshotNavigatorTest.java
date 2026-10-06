@@ -1,11 +1,19 @@
 package io.compprov.tools;
 
+import io.compprov.core.DataContext;
+import io.compprov.core.DefaultComputationContext;
 import io.compprov.core.DefaultComputationEnvironment;
 import io.compprov.core.Snapshot;
+import io.compprov.core.meta.Descriptor;
+import io.compprov.core.operation.OperationTrack;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -316,6 +324,121 @@ class SnapshotNavigatorTest {
         for (int i = 1; i < ids.size(); i++) {
             assertTrue(ids.get(i - 1) < ids.get(i), "operations not sorted at index " + i);
         }
+    }
+
+    // ── ordering ─────────────────────────────────────────────────────────────
+
+    @Test
+    void roots_leaves_unused_orderedByNumericId() {
+        assertSortedVariables(nav.roots());
+        assertSortedVariables(nav.leaves());
+        assertSortedVariables(nav.unused());
+        assertSortedVariables(nav.producesDeep("i_11"));
+        assertSortedVariables(nav.dependsOnDeep("o_96"));
+    }
+
+    private static void assertSortedVariables(List<Snapshot.Variable> vars) {
+        for (int i = 1; i < vars.size(); i++) {
+            assertTrue(vars.get(i - 1).track().getNumericId() < vars.get(i).track().getNumericId(),
+                    "not sorted at index " + i);
+        }
+    }
+
+    // ── arguments ────────────────────────────────────────────────────────────
+
+    @Test
+    void arguments_keepsPositionAndDuplicates() {
+        // op_2: multiply(a=o_12, b=o_12, mc=i_1)
+        assertEquals(List.of("o_12", "o_12", "i_1"),
+                nav.arguments("op_2").stream().map(v -> v.track().getId()).toList());
+    }
+
+    @Test
+    void arguments_unknownOperation_throws() {
+        assertThrows(IllegalArgumentException.class, () -> nav.arguments("op_999"));
+    }
+
+    @Test
+    void produces_variableUsedTwiceInOneOp_listedOnce() {
+        // op_2 consumes o_12 twice, but o_13 must be listed only once (o_12 has other consumers too)
+        assertEquals(List.of("o_13", "o_19", "o_20"),
+                nav.produces("o_12").stream().map(v -> v.track().getId()).toList());
+    }
+
+    // ── validation ───────────────────────────────────────────────────────────
+
+    private static Snapshot.Operation withNumericId(Snapshot.Operation op, int numericId) {
+        return new Snapshot.Operation(
+                new OperationTrack(numericId, op.track().getStartedAt(), op.track().getFinishedAt(),
+                        op.track().getDescriptor(), op.track().getWrapperClass()),
+                op.arguments(), op.resultId());
+    }
+
+    @Test
+    void validation_consumerBeforeProducer_throws() {
+        // op_1 produces o_12, op_2 consumes it; swapping their IDs breaks the order
+        final var ops = snapshot.operations().stream()
+                .map(op -> switch (op.track().getId()) {
+                    case "op_1" -> withNumericId(op, 2);
+                    case "op_2" -> withNumericId(op, 1);
+                    default -> op;
+                })
+                .toList();
+        final var broken = new Snapshot(Descriptor.descriptor("broken"), snapshot.variables(), ops);
+        final var e = assertThrows(IllegalArgumentException.class, () -> new SnapshotNavigator(broken));
+        assertTrue(e.getMessage().contains("later operation"), e.getMessage());
+    }
+
+    @Test
+    void validation_unknownArgument_throws() {
+        final var vars = snapshot.variables().stream().filter(v -> !v.track().getId().equals("i_7")).toList();
+        final var broken = new Snapshot(Descriptor.descriptor("broken"), vars, snapshot.operations());
+        assertThrows(IllegalArgumentException.class, () -> new SnapshotNavigator(broken));
+    }
+
+    @Test
+    void validation_variableProducedTwice_throws() {
+        final var ops = new ArrayList<>(snapshot.operations());
+        ops.add(withNumericId(ops.get(ops.size() - 1), 1000));
+        final var broken = new Snapshot(Descriptor.descriptor("broken"), snapshot.variables(), ops);
+        assertThrows(IllegalArgumentException.class, () -> new SnapshotNavigator(broken));
+    }
+
+    // ── large graphs ─────────────────────────────────────────────────────────
+
+    @Test
+    void deepTraversal_longChain_noStackOverflow() {
+        final var ctx = new DefaultComputationContext(env, new DataContext(Descriptor.descriptor("chain")));
+        final var mc = ctx.wrapMathContext(MathContext.DECIMAL64, Descriptor.descriptor("mc"));
+        final var one = ctx.wrapBigDecimal(BigDecimal.ONE, Descriptor.descriptor("one"));
+        var x = one;
+        for (int i = 0; i < 50_000; i++) {
+            x = x.add(one, mc, null);
+        }
+        final var chain = new SnapshotNavigator(ctx.snapshot());
+        final var last = x.getVariableTrack().getId();
+
+        assertEquals(50_000, chain.producedByDeep(last).size());
+        assertEquals(50_000, chain.producesDeep("i_2").size());
+    }
+
+    @Test
+    @Timeout(10)
+    void deepTraversal_sharedBranches_visitsEachNodeOnce() {
+        // x' = (x * y) + (x + y), repeated: each step joins two branches, so paths double every step
+        final var ctx = new DefaultComputationContext(env, new DataContext(Descriptor.descriptor("diamonds")));
+        final var mc = ctx.wrapMathContext(MathContext.DECIMAL64, Descriptor.descriptor("mc"));
+        final var y = ctx.wrapBigDecimal(new BigDecimal("0.5"), Descriptor.descriptor("y"));
+        var x = ctx.wrapBigDecimal(BigDecimal.ONE, Descriptor.descriptor("x"));
+        for (int i = 0; i < 60; i++) {
+            x = x.multiply(y, mc, null).add(x.add(y, mc, null), mc, null);
+        }
+        final var diamonds = new SnapshotNavigator(ctx.snapshot());
+        final var last = x.getVariableTrack().getId();
+
+        assertEquals(180, diamonds.producedByDeep(last).size());
+        assertEquals(180, diamonds.producesDeep("i_3").size());
+        assertEquals(183, diamonds.cpgOf(last, Set.of()).variables().size());
     }
 
     @Test

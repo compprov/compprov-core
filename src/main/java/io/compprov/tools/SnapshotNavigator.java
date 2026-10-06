@@ -4,9 +4,11 @@ import io.compprov.core.Snapshot;
 import io.compprov.core.meta.Descriptor;
 import io.compprov.core.operation.WrappedArgumentId;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,13 +20,21 @@ import java.util.function.Predicate;
 /**
  * Navigates and queries a {@link Snapshot} computational provenance graph (CPG).
  * <p>
- * Index maps are built once at construction time; all query methods run in O(result size).
+ * Index maps are built once at construction time, and the snapshot is validated: every argument and result must
+ * reference an existing variable, every variable is produced by at most one operation, and an operation producing
+ * an argument must have a lower operation ID than the operation consuming it.
+ * <p>
+ * All returned lists are ordered by numeric ID. Deep traversals are iterative and visit each node once, so they are
+ * safe for long operation chains and heavily shared variables.
  */
 public class SnapshotNavigator {
 
+    static final Comparator<Snapshot.Variable> VARIABLE_ORDER =  Comparator.comparingInt(v -> v.track().getNumericId());
+    static final Comparator<Snapshot.Operation> OPERATION_ORDER = Comparator.comparingInt(o -> o.track().getNumericId());
+
     private final Snapshot snapshot;
-    private final Set<String> leafIds;
-    private final Set<String> rootIds;
+    private final List<Snapshot.Variable> roots;
+    private final List<Snapshot.Variable> leaves;
 
     private final Map<String, Snapshot.Variable> variables;
     private final Map<String, Snapshot.Operation> operations;
@@ -33,6 +43,8 @@ public class SnapshotNavigator {
 
     /**
      * Builds navigation indexes from the given snapshot.
+     *
+     * @throws IllegalArgumentException if the snapshot is inconsistent
      */
     public SnapshotNavigator(Snapshot snapshot) {
         this.snapshot = snapshot;
@@ -40,52 +52,82 @@ public class SnapshotNavigator {
         operations = new HashMap<>();
         producedBy = new HashMap<>();
         participatesIn = new HashMap<>();
-        leafIds = new HashSet<>();
-        rootIds = new HashSet<>();
 
-        for (var operation : snapshot.operations()) {
-            operations.put(operation.track().getId(), operation);
-            producedBy.put(operation.resultId(), operation);
-            operation.arguments().stream().map(WrappedArgumentId::variableId).map(Object::toString).forEach(inputId -> {
-                participatesIn.computeIfAbsent(inputId, (id) -> new ArrayList<>()).add(operation);
-            });
+        for (var variable : variables()) {
+            if (variables.put(variable.track().getId(), variable) != null) {
+                throw invalid("Duplicate variable " + variable.track().getId());
+            }
         }
 
-        snapshot.variables().forEach(variable -> {
-            String id = variable.track().getId();
-            variables.put(id, variable);
-            if (!producedBy.containsKey(variable.track().getId())) { //to avoid falsification through Kind
-                rootIds.add(id);
+        for (var operation : operations()) {
+            final var opId = operation.track().getId();
+            if (operations.put(opId, operation) != null) {
+                throw invalid("Duplicate operation " + opId);
             }
+            if (!variables.containsKey(operation.resultId())) {
+                throw invalid("Operation %s produces unknown variable %s".formatted(opId, operation.resultId()));
+            }
+            final var previousProducer = producedBy.put(operation.resultId(), operation);
+            if (previousProducer != null) {
+                throw invalid("Variable %s is produced by both %s and %s"
+                        .formatted(operation.resultId(), previousProducer.track().getId(), opId));
+            }
+        }
 
-            if (!participatesIn.containsKey(id)) {
-                leafIds.add(id);
+        for (var operation : operations()) {
+            final var opId = operation.track().getId();
+            Set<String> seenArguments = new HashSet<>();
+            for (var argument : operation.arguments()) {
+                final var argumentId = argument.variableId();
+                if (!variables.containsKey(argumentId)) {
+                    throw invalid("Operation %s consumes unknown variable %s".formatted(opId, argumentId));
+                }
+                // Operation IDs on both sides: the producer of an argument must come before its consumer
+                final var producer = producedBy.get(argumentId);
+                if (producer != null && producer.track().getNumericId() >= operation.track().getNumericId()) {
+                    throw invalid("Operation %s consumes %s, which is produced by later operation %s"
+                            .formatted(opId, argumentId, producer.track().getId()));
+                }
+                // Register once per distinct argument, so multiply(x, x) is a single consumer of x
+                if (seenArguments.add(argumentId)) {
+                    participatesIn.computeIfAbsent(argumentId, id -> new ArrayList<>()).add(operation);
+                }
             }
-        });
+        }
+
+        roots = variables().stream()
+                .filter(v -> !producedBy.containsKey(v.track().getId())) // by graph, not by Kind
+                .toList();
+        leaves = variables().stream()
+                .filter(v -> !participatesIn.containsKey(v.track().getId()))
+                .toList();
+    }
+
+    private IllegalArgumentException invalid(String message) {
+        return new IllegalArgumentException("Invalid snapshot '%s': %s"
+                .formatted(snapshot.descriptor().getName(), message));
     }
 
     /**
      * Returns variables that are not consumed by any operation (terminal outputs).
      */
     public List<Snapshot.Variable> leaves() {
-        return leafIds.stream().map(this::getVariable).toList();
+        return leaves;
     }
 
     /**
-     * Returns all input variables.
+     * Returns variables not produced by any operation (inputs).
      */
     public List<Snapshot.Variable> roots() {
-        return rootIds.stream().map(this::getVariable).toList();
+        return roots;
     }
 
     /**
      * Returns input variables that do not participate in any operation.
      */
     public List<Snapshot.Variable> unused() {
-        return rootIds
-                .stream()
-                .filter(id -> !participatesIn.containsKey(id))
-                .map(this::getVariable)
+        return roots.stream()
+                .filter(v -> !participatesIn.containsKey(v.track().getId()))
                 .toList();
     }
 
@@ -112,6 +154,25 @@ public class SnapshotNavigator {
     }
 
     /**
+     * Returns the argument variables of the given operation in argument order. Unlike {@link #dependsOn(String)},
+     * a variable passed twice (e.g. {@code multiply(x, x)}) appears twice.
+     *
+     * @param operationId operation ID
+     * @throws IllegalArgumentException if the operation is not found
+     */
+    public List<Snapshot.Variable> arguments(String operationId) {
+        final var operation = operations.get(operationId);
+        if (operation == null) {
+            throw new IllegalArgumentException("Operation is not found: " + operationId);
+        }
+        return operation.arguments()
+                .stream()
+                .map(WrappedArgumentId::variableId)
+                .map(this::getVariable)
+                .toList();
+    }
+
+    /**
      * Returns the direct input variables of the operation that produced the given variable (one hop backward).
      * Returns an empty list if the variable has no producing operation.
      *
@@ -126,7 +187,6 @@ public class SnapshotNavigator {
         return operation.arguments()
                 .stream()
                 .map(WrappedArgumentId::variableId)
-                .map(Object::toString)
                 .map(this::getVariable)
                 .distinct()
                 .toList();
@@ -143,23 +203,28 @@ public class SnapshotNavigator {
 
     /**
      * Returns the forward transitive closure from the given variable, stopping traversal at any variable in
-     * {@code stopVariables}. Stop variables themselves are excluded from the result.
+     * {@code stopVariables}. Reached stop variables are included in the result, but not traversed further.
      *
      * @param variableId    source variable ID
      * @param stopVariables variable IDs at which traversal halts
      */
     public List<Snapshot.Variable> producesDeep(String variableId, Set<String> stopVariables) {
-        if (stopVariables.contains(variableId)) {
-            return Collections.emptyList();
-        }
         Map<String, Snapshot.Variable> result = new HashMap<>();
-        final var producedVariables = produces(variableId);
-        for (var producedVariable : producedVariables) {
-            result.put(producedVariable.track().getId(), producedVariable);
-            producesDeep(producedVariable.track().getId(), stopVariables)
-                    .forEach(variable -> result.put(variable.track().getId(), variable));
+        Set<String> expanded = new HashSet<>();
+        Deque<String> queue = new ArrayDeque<>();
+        queue.add(variableId);
+        while (!queue.isEmpty()) {
+            final var id = queue.poll();
+            if (stopVariables.contains(id) || !expanded.add(id)) {
+                continue;
+            }
+            for (var operation : participatesIn.getOrDefault(id, Collections.emptyList())) {
+                final var resultId = operation.resultId();
+                result.computeIfAbsent(resultId, this::getVariable);
+                queue.add(resultId);
+            }
         }
-        return result.values().stream().toList();
+        return result.values().stream().sorted(VARIABLE_ORDER).toList();
     }
 
     /**
@@ -178,26 +243,9 @@ public class SnapshotNavigator {
      * @param stopVariables variable IDs at which traversal halts
      */
     public List<Snapshot.Operation> producedByDeep(String variableId, Set<String> stopVariables) {
-        if (stopVariables.contains(variableId)) {
-            return Collections.emptyList();
-        }
-        final var producedByOperation = producedBy(variableId);
-        if (producedByOperation.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        Map<String, Snapshot.Operation> result = new HashMap<>();
-        producedByOperation.ifPresent(operation -> {
-            result.put(operation.track().getId(), operation);
-            operation.arguments()
-                    .stream()
-                    .map(WrappedArgumentId::variableId)
-                    .map(Object::toString)
-                    .map(varId -> producedByDeep(varId, stopVariables))
-                    .flatMap(Collection::stream)
-                    .forEach(op -> result.put(op.track().getId(), op));
-        });
-        return result.values().stream().toList();
+        Map<String, Snapshot.Operation> ops = new HashMap<>();
+        walkBackward(variableId, stopVariables, ops, new HashMap<>());
+        return ops.values().stream().sorted(OPERATION_ORDER).toList();
     }
 
     /**
@@ -211,33 +259,38 @@ public class SnapshotNavigator {
 
     /**
      * Returns transitive dependencies of the given variable, stopping at variables in {@code stopVariables}.
+     * Reached stop variables are included in the result, but not traversed further.
      *
      * @param variableId    target variable ID
      * @param stopVariables variable IDs at which traversal halts
      */
     public List<Snapshot.Variable> dependsOnDeep(String variableId, Set<String> stopVariables) {
-        if (stopVariables.contains(variableId)) {
-            return Collections.emptyList();
-        }
-        final var producedByOperation = producedBy(variableId);
-        if (producedByOperation.isEmpty()) {
-            return Collections.emptyList();
-        }
+        Map<String, Snapshot.Variable> vars = new HashMap<>();
+        walkBackward(variableId, stopVariables, new HashMap<>(), vars);
+        return vars.values().stream().sorted(VARIABLE_ORDER).toList();
+    }
 
-        Map<String, Snapshot.Variable> result = new HashMap<>();
-        producedByOperation.ifPresent(operation -> {
-            operation.arguments()
-                    .stream()
-                    .map(WrappedArgumentId::variableId)
-                    .map(Object::toString)
-                    .map(this::getVariable)
-                    .forEach(variable -> {
-                        result.put(variable.track().getId(), variable);
-                        dependsOnDeep(variable.track().getId(), stopVariables)
-                                .forEach(v -> result.put(v.track().getId(), v));
-                    });
-        });
-        return result.values().stream().toList();
+    // Breadth-first walk towards the roots, collecting the operations passed and the argument variables reached
+    private void walkBackward(String variableId, Set<String> stopVariables,
+                              Map<String, Snapshot.Operation> ops, Map<String, Snapshot.Variable> vars) {
+        Set<String> expanded = new HashSet<>();
+        Deque<String> queue = new ArrayDeque<>();
+        queue.add(variableId);
+        while (!queue.isEmpty()) {
+            final var id = queue.poll();
+            if (stopVariables.contains(id) || !expanded.add(id)) {
+                continue;
+            }
+            final var operation = producedBy.get(id);
+            if (operation == null) {
+                continue;
+            }
+            ops.put(operation.track().getId(), operation);
+            for (var argument : operation.arguments()) {
+                vars.computeIfAbsent(argument.variableId(), this::getVariable);
+                queue.add(argument.variableId());
+            }
+        }
     }
 
     /**
@@ -249,13 +302,14 @@ public class SnapshotNavigator {
      * @param stopVariables variable IDs at which backward traversal halts
      */
     public Snapshot cpgOf(String variableId, Set<String> stopVariables) {
-        final var ops = new ArrayList<>(producedByDeep(variableId, stopVariables));
-        final var variables = new ArrayList<>(dependsOnDeep(variableId, stopVariables));
-        variables.add(getVariable(variableId));
+        Map<String, Snapshot.Operation> ops = new HashMap<>();
+        Map<String, Snapshot.Variable> vars = new HashMap<>();
+        walkBackward(variableId, stopVariables, ops, vars);
+        vars.put(variableId, getVariable(variableId));
 
-        ops.sort((o1, o2) -> Integer.compare(o1.track().getNumericId(), o2.track().getNumericId()));
-        variables.sort((v1, v2) -> Integer.compare(v1.track().getNumericId(), v2.track().getNumericId()));
-        return new Snapshot(Descriptor.descriptor("CPG for variable " + variableId), variables, ops);
+        return new Snapshot(Descriptor.descriptor("CPG for variable " + variableId),
+                vars.values().stream().sorted(VARIABLE_ORDER).toList(),
+                ops.values().stream().sorted(OPERATION_ORDER).toList());
     }
 
     /**
@@ -294,7 +348,7 @@ public class SnapshotNavigator {
     }
 
     public List<Snapshot.Variable> findVariables(Predicate<Snapshot.Variable> predicate) {
-        return variables.values().stream().filter(predicate).toList();
+        return variables().stream().filter(predicate).toList();
     }
 
     /**
@@ -321,10 +375,16 @@ public class SnapshotNavigator {
         return findVariables(it -> it.track().getDescriptor().getName().equals(name));
     }
 
+    /**
+     * Returns all variables ordered by numeric ID.
+     */
     public List<Snapshot.Variable> variables() {
         return snapshot.variables();
     }
 
+    /**
+     * Returns all operations ordered by numeric ID; producers always precede their consumers.
+     */
     public List<Snapshot.Operation> operations() {
         return snapshot.operations();
     }
