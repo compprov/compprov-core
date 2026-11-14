@@ -11,6 +11,10 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.module.SimpleModule;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Clock;
 import java.time.ZoneId;
@@ -20,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Thread-safe.
@@ -74,17 +80,54 @@ public class ComputationEnvironment {
         mapper = mapper.rebuild().addModule(jacksonModule).build();
     }
 
+    /**
+     * Serializes the snapshot to pretty-printed JSON.
+     */
     public String toJson(Snapshot snapshot) {
+        return toJson(snapshot, false);
+    }
+
+    /**
+     * Writes the snapshot as pretty-printed JSON to the stream.
+     * <p>
+     * The default mapper closes the stream afterwards, but a custom mapper may change this.
+     * Callers should close the stream themselves (closing it twice is safe).
+     */
+    public void toJson(Snapshot snapshot, OutputStream os) {
+        toJson(snapshot, os, false);
+    }
+
+    /**
+     * Serializes the snapshot to JSON.
+     *
+     * @param minify {@code true} for compact single-line output, {@code false} for pretty-printed
+     */
+    public String toJson(Snapshot snapshot, boolean minify) {
         try {
+            if (minify) {
+                return mapper.writeValueAsString(snapshot);
+            }
             return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(snapshot);
         } catch (JacksonException e) {
             throw new IllegalStateException("JSON serialization failed", e);
         }
     }
 
-    public void toJson(Snapshot snapshot, OutputStream os) {
+    /**
+     * Writes the snapshot as JSON to the stream.
+     * <p>
+     * The default mapper closes the stream afterwards, but a custom mapper may change this.
+     * Callers should close the stream themselves (closing it twice is safe).
+     *
+     * @param minify {@code true} for compact single-line output, {@code false} for pretty-printed
+     */
+    public void toJson(Snapshot snapshot, OutputStream os, boolean minify) {
         try {
-            mapper.writerWithDefaultPrettyPrinter().writeValue(os, snapshot);
+            if (minify) {
+                mapper.writeValue(os, snapshot);
+            } else {
+                mapper.writerWithDefaultPrettyPrinter().writeValue(os, snapshot);
+            }
         } catch (JacksonException e) {
             throw new IllegalStateException("JSON serialization failed", e);
         }
@@ -103,6 +146,65 @@ public class ComputationEnvironment {
             return mapper.readValue(json, Snapshot.class);
         } catch (JacksonException e) {
             throw new IllegalArgumentException("Unable to deserialize JSON", e);
+        }
+    }
+
+    /**
+     * Restores a snapshot from JSON read from the stream.
+     * <p>
+     * The default mapper closes the stream afterwards, but a custom mapper may change this.
+     * Callers should close the stream themselves (closing it twice is safe).
+     */
+    public Snapshot fromJson(InputStream is) {
+        try {
+            return mapper.readValue(is, Snapshot.class);
+        } catch (JacksonException e) {
+            throw new IllegalArgumentException("Unable to deserialize JSON", e);
+        }
+    }
+
+    /**
+     * Serializes the snapshot to minified JSON compressed with GZIP.
+     */
+    public byte[] toGzip(Snapshot snapshot) {
+        try {
+            final var baos = new ByteArrayOutputStream();
+            try (final var gzip = new GZIPOutputStream(baos)) {
+                toJson(snapshot, gzip, true);
+            }
+            return baos.toByteArray();
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to serialize snapshot", e);
+        }
+    }
+
+    /**
+     * Restores a snapshot from GZIP-compressed JSON produced by {@link #toGzip(Snapshot)}.
+     */
+    public Snapshot fromGzip(byte[] gzip) {
+        try (final var in = new GZIPInputStream(new ByteArrayInputStream(gzip))) {
+            return mapper.readValue(in, Snapshot.class);
+        } catch (JacksonException e) {
+            throw new IllegalArgumentException("Unable to deserialize JSON", e);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Invalid GZIP data", e);
+        }
+    }
+
+    /**
+     * Restores a snapshot from GZIP-compressed JSON read from the stream, as produced by
+     * {@link #toGzip(Snapshot)}.
+     * <p>
+     * The default mapper closes the stream afterwards, but a custom mapper may change this.
+     * Callers should close the stream themselves (closing it twice is safe).
+     */
+    public Snapshot fromGzip(InputStream is) {
+        try {
+            return mapper.readValue(new GZIPInputStream(is), Snapshot.class);
+        } catch (JacksonException e) {
+            throw new IllegalArgumentException("Unable to deserialize JSON", e);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Invalid GZIP data", e);
         }
     }
 
